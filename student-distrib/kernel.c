@@ -9,7 +9,8 @@
 #include "debug.h"
 #include "tests.h"
 
-#define RUN_TESTS
+//Define as 1 to run tests, 0 to skip tests
+#define RUN_TESTS 0
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -151,7 +152,10 @@ void entry(unsigned long magic, unsigned long addr) {
 
 #ifdef RUN_TESTS
     /* Run tests */
-    launch_tests();
+	if(RUN_TESTS){
+		launch_tests();
+	}
+    
 #endif
     /* Execute the first program ("shell") ... */
 
