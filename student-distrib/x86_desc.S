@@ -85,6 +85,14 @@ ldt_desc_ptr:
 gdt_bottom:
 
     .align 16
+
+.align 4
+	.word 0
+gdt_desc:
+	.word gdt_bottom - gdt - 1
+	.long gdt
+	.align 16
+
 ldt:
     .rept 4
     .quad 0
