@@ -11,7 +11,7 @@
 #include "handlers.h"
 
 //Define as 1 to run tests, 0 to skip tests
-#define RUN_TESTS 0
+#define RUN_TESTS 1
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -137,7 +137,10 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
+	
+	/* Init the IDT, located in handlers.c*/
 	populate_idt();
+	
     /* Init the PIC */
     i8259_init();
 

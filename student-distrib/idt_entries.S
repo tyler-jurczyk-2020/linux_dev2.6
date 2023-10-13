@@ -1,33 +1,40 @@
 #define ASM     1
 # vim:ts=4 noexpandtab
-#include "idt_entries.h"
 
-.globl isr_stub_table
-
-
-
-#define INTR_LINK(name,func)    \
-.globl name       			   ;\
-	name:				       ;\
-		pushal				   ;\
-		pushfl				   ;\
-		call func			   ;\
-		popfl 				   ;\
-		popal				   ;\
-		iret				  
-
-
-INTR_LINK(exception_linkage,exception_handler)
-
-#define isr_exception(vector)   \
+#Below is a macro used to link the C exception handler to ASM, pushes arguments and flags/regs to stack as well as clears interrupts
+#define isr_exception(vector)     \
 .globl isr_stub_##vector         ;\
+.align 4						 ;\
 	isr_stub_##vector:           ;\
+		cli                      ;\
+		pushal  				 ;\
+		pushfl					 ;\
 		pushl $##vector          ;\
-		call exception_linkage ;\
-		addl $4, %ESP		   ;\
-		iret				  
+		call exception_handler   ;\
+		addl $4, %ESP		     ;\
+		popfl 					 ;\
+		popal					 ;\
+		sti                      ;\
+		iret		
 
+#Below is a macro used to link the C syscall handler to ASM, pushes arguments and flags/regs to stack as well as clears interrupts
+#define isr_system_call(vector)   \
+.globl isr_stub_##vector         ;\
+.align 4						 ;\
+	isr_stub_##vector:           ;\
+		cli                      ;\
+		pushal  				 ;\
+		pushfl					 ;\
+		pushl %eax		         ;\
+		call system_call_handler ;\
+		addl $4, %ESP		     ;\
+		popfl 					 ;\
+		popal					 ;\
+		sti                      ;\
+		iret			
 
+#These below use the macros above to make functions that call their respective handler
+#They are then placed in the stub table below according to their vector# index to be used by handlers.c to populate the idt
 isr_exception(0)
 isr_exception(1)
 isr_exception(2)
@@ -48,8 +55,47 @@ isr_exception(16)
 isr_exception(17)
 isr_exception(18)
 isr_exception(19)
+isr_system_call(128)
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.globl isr_stub_table
 isr_stub_table:
 	.long isr_stub_0
 	.long isr_stub_1
@@ -71,5 +117,140 @@ isr_stub_table:
 	.long isr_stub_17
 	.long isr_stub_18
 	.long isr_stub_19
-	
-
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long isr_stub_128
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0
+	.long 0

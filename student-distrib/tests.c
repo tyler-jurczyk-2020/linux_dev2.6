@@ -29,6 +29,7 @@ static inline void assertion_failure(){
  * Coverage: Load IDT, IDT definition
  * Files: x86_desc.h/S
  */
+ 
 int idt_test(){
 	TEST_HEADER;
 
@@ -46,7 +47,30 @@ int idt_test(){
 }
 
 // add more tests here
+//Checks if division by 0 causes an exception
+int divide_by_zero_test(){
+	TEST_HEADER;
 
+	int i = 3/0;
+
+	return 0;
+}
+//checks if dereferencing a nullptr causes an exception, doesn't work now (i think paging needs to be finished)
+int null_ptr_test(){
+	TEST_HEADER;
+	int j = 0;
+	char i = *((char*)(j));
+
+	return 0;
+}
+//tries a system call
+int sys_call_test(){
+	TEST_HEADER;
+	__asm__("MOVL $42, %EAX");
+	__asm__("INT $0x80");
+
+	return 0;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -55,6 +79,10 @@ int idt_test(){
 
 /* Test suite entry point */
 void launch_tests(){
-	TEST_OUTPUT("idt_test", idt_test());
+	
 	// launch your tests here
+	//TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
+	//TEST_OUTPUT("null_ptr_test", null_ptr_test());
+	TEST_OUTPUT("sys_call_test", sys_call_test());
 }
