@@ -1,6 +1,3 @@
-# Following divides VIDEO in lib.c by 4096
-#define VIDEO_ENT 184
-
 .text
 .globl enable_paging
   
