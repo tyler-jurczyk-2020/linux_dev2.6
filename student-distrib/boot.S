@@ -28,12 +28,20 @@ continue:
 	lgdt gdt_desc
 	# Load the IDT
 	lidt idt_desc_ptr
-    # Load CS with the new descriptor value
+	# Load CS with the new descriptor value
     ljmp    $KERNEL_CS, $keep_going
 
 keep_going:
     # Set up ESP so we can have an initial stack
-    movl    $0x800000, %esp
+    # movl    $0x800000, %esp
+	movl	$0x800000, %ebp
+	movl    $0x800000, %esp
+	
+	# Enable paging (Expects no parameters)
+	pushl $0 # push 0 to avoid problems with popping %eax off the stack
+	pushl %eax
+	call enable_paging	
+	popl %eax
 
     # Set up the rest of the segment selector registers
     movw    $KERNEL_DS, %cx

@@ -18,7 +18,7 @@ void setup_pager_table() {
             page_tbl[i] =  0x000B8003;
         } 
         else {
-            page_tbl[i] = 0;
+            page_tbl[i] = 0x02;
         }
     }   
 }
@@ -37,13 +37,13 @@ void setup_pager_directory() {
     unsigned int i;
     for(i = 0; i < TABLE_SZ; i++) {
         if (i == 0) {
-            page_dir[i] = ((uint32_t) page_tbl) + 3; // Sets the present and r/w priv
+            page_dir[i] = ((uint32_t) page_tbl) | 3; // Sets the present and r/w priv
         }
         else if (i == 1) {
             page_dir[i] = 0x00400183;
         }
         else {
-            page_dir[i] = 0;
+            page_dir[i] = 0x02;
         }
     }
 }

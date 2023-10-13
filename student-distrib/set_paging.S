@@ -7,18 +7,18 @@
 enable_paging:
     pushl %ebp
     movl %esp, %ebp
-    pushl %eax
     call setup_pager_directory
     xor %eax, %eax
     # Allow mixed-size paging 
-    movl $0x00000010, %eax
+    movl %cr4, %eax
+    or $0x00000010, %eax
     movl %eax, %cr4    
     # Set paging directory
-    mov $page_dir, %eax
+    movl $page_dir, %eax
     movl %eax, %cr3
     # Enable paging
-    movl $0x80000000, %eax
+    movl %cr0, %eax
+    or $0x80000000, %eax
     movl %eax, %cr0 
-    popl %eax
     leave
     ret
