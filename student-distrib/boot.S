@@ -33,16 +33,8 @@ continue:
 
 keep_going:
     # Set up ESP so we can have an initial stack
-    # movl    $0x800000, %esp
-	movl	$0x800000, %ebp
-	movl    $0x800000, %esp
-	
-	# Enable paging (Expects no parameters)
-	pushl $0 # push 0 to avoid problems with popping %eax off the stack
-	pushl %eax
-	call enable_paging	
-	popl %eax
-
+    movl    $0x800000, %esp
+		
     # Set up the rest of the segment selector registers
     movw    $KERNEL_DS, %cx
     movw    %cx, %ss

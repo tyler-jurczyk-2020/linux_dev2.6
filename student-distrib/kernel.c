@@ -9,6 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "handlers.h"
+#include "paging.h"
 
 //Define as 1 to run tests, 0 to skip tests
 #define RUN_TESTS 1
@@ -140,6 +141,9 @@ void entry(unsigned long magic, unsigned long addr) {
 	
 	/* Init the IDT, located in handlers.c*/
 	populate_idt();
+
+	// Enable paging
+	enable_paging();
 	
     /* Init the PIC */
     i8259_init();

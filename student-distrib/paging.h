@@ -9,4 +9,6 @@ uint32_t page_dir[TABLE_SZ] __attribute__((aligned(4096)));
 
 void setup_pager_directory();
 
+void enable_paging();
+
 #endif
