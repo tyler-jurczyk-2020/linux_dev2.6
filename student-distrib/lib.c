@@ -2,7 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
-
+#include "rtc.h"
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
@@ -469,8 +469,10 @@ int8_t* strncpy(int8_t* dest, const int8_t* src, uint32_t n) {
  * Return Value: void
  * Function: increments video memory. To be used to test rtc */
 void test_interrupts(void) {
+	rtc_interrupt();
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
     }
+	send_eoi(8);
 }

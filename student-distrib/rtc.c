@@ -15,12 +15,12 @@ void rtc_init() {
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
 	outb(Register_B, PORT_index); //setting index
-	outb(prev | RTC_BIT, PORT_index); // writing previous value with 0x40
+	outb(prev | RTC_BIT, PORT_RW); // writing previous value with 0x40
 	
 	//enable interrupts
 	enable_irq(IRQ8);
 
-	rtc_interrupt_rate(1024); //setting interrupt rate, 1024Hz is default value of output divider frequency
+	//rtc_interrupt_rate(1024); //setting interrupt rate, 1024Hz is default value of output divider frequency
 } 
 
 /* rtc_interrupt_rate

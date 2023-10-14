@@ -40,12 +40,14 @@ populate_idt: Called in kernel.c during setup, populates the IDT with correct fu
 void populate_idt(){
 	int i;
 	for(i = 0; i<NUM_VEC; i++){
+		
 		if(isr_stub_table[i] != 0){
 			SET_IDT_ENTRY(idt[i], isr_stub_table[i]);
 			idt[i].present = 1;
 		}else{
 			idt[i].present = 0;
 		}
+		
 		idt[i].dpl = 0;
 		idt[i].seg_selector = KERNEL_CS;
 		idt[i].size = 1;
@@ -70,9 +72,10 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 	if(vector<20){
 		printf("exception: ");
 		printf("%s",interrupt_msg_mapper[vector].name);
-	}if (vector<32){
+	}else if (vector<32){
 		printf("exception vector: %x",vector);
 	}else{
+		printf("exception vector: %x",vector);
 		printf("invalid exception vector??");
 	}
 	
