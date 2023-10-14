@@ -28,7 +28,7 @@ void i8259_init(void) {
     outb(cashed_8259[0], MASTER_8259_DATA);
     outb(cashed_8259[1], SLAVE_8259_DATA);
 
-	enable_irq(2);
+	enable_irq(2);//enable slave pic
 }
 
 /* Enable (unmask) the specified IRQ */
@@ -57,9 +57,13 @@ void disable_irq(uint32_t irq_num) {
 
 /* Send end-of-interrupt signal for the specified IRQ */
 void send_eoi(uint32_t irq_num) {
-    outb(EOI, MASTER_8259_PORT);
-    
+    if(irq_num < 0 || irq_num > 15){
+		return;
+	}
     if(irq_num>=8){
-        outb(EOI, SLAVE_8259_PORT);
-    }
+		outb(EOI | 2, MASTER_8259_PORT);
+        outb(EOI | (irq_num-8) , SLAVE_8259_PORT);
+    }else{
+		outb(EOI | irq_num, MASTER_8259_PORT);
+	}
 }
