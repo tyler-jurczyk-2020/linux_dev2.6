@@ -82,7 +82,7 @@ void launch_tests(){
 	
 	// launch your tests here
 	//TEST_OUTPUT("idt_test", idt_test());
-	//TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
+	TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
 	//TEST_OUTPUT("null_ptr_test", null_ptr_test());
-	TEST_OUTPUT("sys_call_test", sys_call_test());
+	//TEST_OUTPUT("sys_call_test", sys_call_test());
 }

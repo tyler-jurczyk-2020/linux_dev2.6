@@ -11,6 +11,8 @@
 /* Ports that each PIC sits on */
 #define MASTER_8259_PORT    0x20
 #define SLAVE_8259_PORT     0xA0
+#define MASTER_8259_DATA    0x21
+#define SLAVE_8259_DATA     0xA1
 
 // #define MASTER_8259_PORT_MASK   0x21
 // #define SLAVE_8259_PORT_MASK    0xA1

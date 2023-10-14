@@ -10,9 +10,10 @@
 #include "tests.h"
 #include "handlers.h"
 #include "paging.h"
+#include "rtc.h"
 
-//Define as 1 to run tests, 0 to skip tests
-#define RUN_TESTS 1
+//uncomment to run tests
+//#define RUN_TESTS
 
 /* Macros. */
 /* Check if the bit BIT in FLAGS is set. */
@@ -138,7 +139,7 @@ void entry(unsigned long magic, unsigned long addr) {
         tss.esp0 = 0x800000;
         ltr(KERNEL_TSS);
     }
-	
+	cli();
 	/* Init the IDT, located in handlers.c*/
 	populate_idt();
 
@@ -148,6 +149,9 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Init the PIC */
     i8259_init();
 
+	/* Init the RTC */
+	rtc_init();
+
     /* Initialize devices, memory, filesystem, enable device interrupts on the
      * PIC, any other initialization stuff... */
 
@@ -155,14 +159,12 @@ void entry(unsigned long magic, unsigned long addr) {
     /* Do not enable the following until after you have set up your
      * IDT correctly otherwise QEMU will triple fault and simple close
      * without showing you any output */
-    /*printf("Enabling Interrupts\n");
-    sti();*/
+    printf("Enabling Interrupts\n");
+    sti();
 
 #ifdef RUN_TESTS
     /* Run tests */
-	if(RUN_TESTS){
 		launch_tests();
-	}
     
 #endif
     /* Execute the first program ("shell") ... */
