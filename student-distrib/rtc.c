@@ -11,8 +11,7 @@
  */
 
 void rtc_init() {
-
-	//disable interrupts
+	cli(); //disable interrupts
 	
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
@@ -21,7 +20,8 @@ void rtc_init() {
 	
 	//enable interrupts
 	enable_irq(IRQ8);
-	
+	sti();
+
 	rtc_interrupt_rate(1024); //setting interrupt rate, 1024Hz is default value of output divider frequency
 } 
 
@@ -36,20 +36,20 @@ void rtc_init() {
 void rtc_interrupt_rate(int frequency) {
 	//Check for frequency range is accurate
 	
-	if (frequency >= 2 && frequency <= 32768) {
-		continue;
-	}
-	
+	/* TODO: Maximize frequency to virtualiz*/
 	int rate = 0;
 	rate &= rate_value; 
-	
-	//disable interrupts
-	outb(REGISTER_A, PORT_index);
+
+	cli(); //disable interrupts
+
+	outb(Register_A, PORT_index); //set index to reg A
 	char prev = inb(PORT_RW); //initial value of reg A
-	outb(REGISTER_A, PORT_RW); //reset index to A
+	outb(Register_A, PORT_RW); //reset index to A
 	outb( (prev & 0xF0) | rate, PORT_RW);
 	
-	enable_irq(IRQ8); //enabling interrupts
+	//enabling interrupts
+	enable_irq(IRQ8); 
+	sti();
 	
 }
 
@@ -62,5 +62,9 @@ void rtc_interrupt_rate(int frequency) {
  * SIDE EFFECT: none
  */
  void rtc_interrupt() {
+
+	outb(Register_C, PORT_index); //selecting register C
+	inb(PORT_RW); //clearing the contents
+	
  }
  

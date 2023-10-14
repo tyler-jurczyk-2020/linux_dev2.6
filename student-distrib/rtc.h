@@ -14,6 +14,7 @@
 #define RTC_BIT 0x40 //turning on bit 6 
 #define IRQ8 8 //irq number
 #define rate_value 0x0F //rate must be above 2 and not over 15
+#define MAX_FREQ 32768 //max interrupt rate of RTC (Hz)
 
 /* initializing RTC */
 void rtc_init();
