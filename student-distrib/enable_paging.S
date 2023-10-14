@@ -12,10 +12,20 @@ enable_paging:
     movl %eax, %cr4    
     # Set paging directory
     movl $page_dir, %eax
-    movl %eax, %cr3
+    pushl %eax
+    call mod_cr3
+    addl $4, %esp 
     # Enable paging
     movl %cr0, %eax
     or $0x80000000, %eax
     movl %eax, %cr0 
+    leave
+    ret
+
+mod_cr3:
+    pushl %ebp
+    movl %esp, %ebp
+    movl 8(%ebp), %eax
+    movl %eax, %cr3
     leave
     ret

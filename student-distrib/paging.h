@@ -85,4 +85,6 @@ void setup_pager_directory();
 
 void enable_paging();
 
+void mod_cr3(uint32_t *);
+
 #endif
