@@ -17,12 +17,11 @@
 		sti                      ;\
 		iret		
 
-#Below is a macro used to link the C syscall handler to ASM, pushes arguments and flags/regs to stack as well as clears interrupts
+#Below is a macro used to link the C syscall handler to ASM, pushes arguments and flags/regs to stack
 #define isr_system_call(vector)   \
 .globl isr_stub_##vector         ;\
 .align 4						 ;\
 	isr_stub_##vector:           ;\
-		cli                      ;\
 		pushal  				 ;\
 		pushfl					 ;\
 		pushl %eax		         ;\
@@ -30,8 +29,35 @@
 		addl $4, %ESP		     ;\
 		popfl 					 ;\
 		popal					 ;\
-		sti                      ;\
 		iret			
+		
+#Below is a macro used to link the C rtc handler to ASM, pushes args and flags/regs to stack
+#define isr_rtc(vector)   \
+.globl isr_stub_##vector         ;\
+.align 4						 ;\
+	isr_stub_##vector:           ;\
+		pushal  				 ;\
+		pushfl					 ;\
+		call test_interrupts 	 ;\
+		popfl 					 ;\
+		popal					 ;\
+		iret			
+
+
+#TODO REPLACE WITH KEYBOARD HANDLER
+#Below is a macro used to link the C keyboard handler to ASM, pushes args and flags/regs to stack
+#define isr_keyboard(vector)   \
+.globl isr_stub_##vector         ;\
+.align 4						 ;\
+	isr_stub_##vector:           ;\
+		pushal  				 ;\
+		pushfl					 ;\
+		call exception_handler 	 ;\
+		popfl 					 ;\
+		popal					 ;\
+		iret			
+		
+		
 
 #These below use the macros above to make functions that call their respective handler
 #They are then placed in the stub table below according to their vector# index to be used by handlers.c to populate the idt
@@ -55,35 +81,9 @@ isr_exception(16)
 isr_exception(17)
 isr_exception(18)
 isr_exception(19)
+isr_keyboard(33) #0x21, irq1 on the pic
+isr_rtc(40) #0x28, irq8 on the pic
 isr_system_call(128)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -130,14 +130,14 @@ isr_stub_table:
 	.long 0
 	.long 0
 	.long 0
+	.long isr_stub_33
 	.long 0
 	.long 0
 	.long 0
 	.long 0
 	.long 0
 	.long 0
-	.long 0
-	.long 0
+	.long isr_stub_40
 	.long 0
 	.long 0
 	.long 0
@@ -254,3 +254,5 @@ isr_stub_table:
 	.long 0
 	.long 0
 	.long 0
+
+	
