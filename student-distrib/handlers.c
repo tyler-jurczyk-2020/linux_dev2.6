@@ -56,6 +56,7 @@ void populate_idt(){
 		idt[i].reserved4 = 0;
 	}
 	idt[128].dpl = 3;//set sys call priveledge level down to user
+	idt[128].reserved3 = 1; //set system call to a trap gate
 }
 
 /*

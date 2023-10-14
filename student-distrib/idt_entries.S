@@ -22,7 +22,6 @@
 .globl isr_stub_##vector         ;\
 .align 4						 ;\
 	isr_stub_##vector:           ;\
-		cli                      ;\
 		pushal  				 ;\
 		pushfl					 ;\
 		pushl %eax		         ;\
@@ -30,7 +29,6 @@
 		addl $4, %ESP		     ;\
 		popfl 					 ;\
 		popal					 ;\
-		sti                      ;\
 		iret			
 
 #These below use the macros above to make functions that call their respective handler
