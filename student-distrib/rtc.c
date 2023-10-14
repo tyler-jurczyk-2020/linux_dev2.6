@@ -11,7 +11,6 @@
  */
 
 void rtc_init() {
-	cli(); //disable interrupts
 	
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
@@ -20,7 +19,6 @@ void rtc_init() {
 	
 	//enable interrupts
 	enable_irq(IRQ8);
-	sti();
 
 	rtc_interrupt_rate(1024); //setting interrupt rate, 1024Hz is default value of output divider frequency
 } 

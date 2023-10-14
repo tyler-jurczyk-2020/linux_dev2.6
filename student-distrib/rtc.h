@@ -7,9 +7,9 @@
 #define PORT_RW 0x71 //port to read/write from/to byte of CMOS configuration space
 #define PORT_index 0x70 //por tto specify index and disable NMI
 
-#define Regiter_A 0x8A //setting to 0x80 bit to disable NMI
-#define Regiter_B 0x8B //setting to 0x80 bit to disable NMI
-#define Regiter_C 0x8C //setting to 0x80 bit to disable NMI
+#define Register_A 0x8A //setting to 0x80 bit to disable NMI
+#define Register_B 0x8B //setting to 0x80 bit to disable NMI
+#define Register_C 0x8C //setting to 0x80 bit to disable NMI
 
 #define RTC_BIT 0x40 //turning on bit 6 
 #define IRQ8 8 //irq number
