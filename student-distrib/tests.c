@@ -71,6 +71,15 @@ int sys_call_test(){
 
 	return 0;
 }
+
+// infinit loop to try keyboard typing
+int test_keyboard(){
+	TEST_HEADER;
+	while(1){
+
+	}
+	return 0;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
@@ -81,8 +90,9 @@ int sys_call_test(){
 void launch_tests(){
 	
 	// launch your tests here
-	//TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
+	TEST_OUTPUT("idt_test", idt_test());
+	//TEST_OUTPUT("divide_zero_test", divide_by_zero_test()); 
 	//TEST_OUTPUT("null_ptr_test", null_ptr_test());
 	//TEST_OUTPUT("sys_call_test", sys_call_test());
+	//TEST_OUTPUT("keyboard test", test_keyboard());
 }
