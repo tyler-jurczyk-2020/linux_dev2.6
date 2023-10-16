@@ -77,6 +77,15 @@ int sys_call_test(){
 
 	return 0;
 }
+
+// infinit loop to try keyboard typing
+int test_keyboard(){
+	TEST_HEADER;
+	while(1){
+
+	}
+	return 0;
+}
 /* Checkpoint 2 tests */
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */

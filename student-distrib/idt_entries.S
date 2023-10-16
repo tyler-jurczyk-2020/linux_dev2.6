@@ -50,11 +50,13 @@
 .globl isr_stub_##vector         ;\
 .align 4						 ;\
 	isr_stub_##vector:           ;\
+		cli                      ;\
 		pushal  				 ;\
 		pushfl					 ;\
-		call exception_handler 	 ;\
+		call handle_keyboard 	 ;\
 		popfl 					 ;\
 		popal					 ;\
+		sti                      ;\
 		iret			
 		
 		
