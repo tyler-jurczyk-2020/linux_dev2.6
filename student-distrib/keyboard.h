@@ -7,8 +7,9 @@
 #define SET_TYPEMATIC       0xF3
 #define TYPEMATIC_DATA      0x0F
 #define IRQ1                0x01
+/* This function initialize the keyboard*/
 extern void keyboard_init();
-
+/*This is the keyboard handler*/
 extern void handle_keyboard();
 
 #endif
