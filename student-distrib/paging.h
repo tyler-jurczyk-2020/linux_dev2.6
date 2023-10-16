@@ -77,11 +77,13 @@ typedef struct {
     };
 } page_table_entry_t;
 
-page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
+extern page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
-page_table_entry_t page_tbl[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
+extern page_table_entry_t page_tbl[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
 void setup_pager_directory();
+
+void setup_pager_table();
 
 void enable_paging();
 

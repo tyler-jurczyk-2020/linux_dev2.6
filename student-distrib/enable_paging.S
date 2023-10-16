@@ -1,6 +1,12 @@
 .text
 .globl enable_paging
-  
+.globl mod_cr3
+
+ /* void enable_paging();
+ * Inputs: none 
+ * Return Value: none
+ *  Function: Modify control registers to enable paging with mixed sizes */
+ 
 enable_paging:
     pushl %ebp
     movl %esp, %ebp
@@ -21,6 +27,11 @@ enable_paging:
     movl %eax, %cr0 
     leave
     ret
+
+ /* void mod_cr3(uint32_t *);
+ * Inputs: pointer to a page directory 
+ * Return Value: none
+ *  Function: Set the page directory to be used in control register 3 */
 
 mod_cr3:
     pushl %ebp

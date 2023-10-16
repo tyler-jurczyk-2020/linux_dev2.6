@@ -63,6 +63,12 @@ int null_ptr_test(){
 
 	return 0;
 }
+//Test memory bounds
+int valid_mem_test(char *addr){
+	TEST_HEADER;
+	char i = *addr;
+	return 0;
+}
 //tries a system call
 int sys_call_test(){
 	TEST_HEADER;
@@ -82,7 +88,20 @@ void launch_tests(){
 	
 	// launch your tests here
 	//TEST_OUTPUT("idt_test", idt_test());
-	TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
+	//TEST_OUTPUT("divide_zero_test", divide_by_zero_test());
 	//TEST_OUTPUT("null_ptr_test", null_ptr_test());
 	//TEST_OUTPUT("sys_call_test", sys_call_test());
+
+    /* Test various bounds of the memory*/
+
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB7FFF));
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB8000));
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB8FFF));
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB9000));
+
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x3FFFFF));
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x400000));
+    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
+    TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x800000));
+
 }
