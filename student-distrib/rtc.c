@@ -1,5 +1,5 @@
 #include "rtc.h"
-
+#include "lib.h"
 
 /* rtc_init
  * DESCRIPTION: Turning on periodic interrupt and setting frequency 
@@ -20,7 +20,7 @@ void rtc_init() {
 	//enable interrupts
 	enable_irq(IRQ8);
 
-	//rtc_interrupt_rate(1024); //setting interrupt rate, 1024Hz is default value of output divider frequency
+	//rtc_interrupt_rate(2); //setting interrupt rate, 1024Hz is default value of output divider frequency
 } 
 
 /* rtc_interrupt_rate
@@ -60,9 +60,11 @@ void rtc_interrupt_rate(int frequency) {
  * SIDE EFFECT: none
  */
  void rtc_interrupt() {
-
+	
 	outb(Register_C, PORT_index); //selecting register C
 	inb(PORT_RW); //clearing the contents
+	test_interrupts();
+	send_eoi(8);
 	
  }
  

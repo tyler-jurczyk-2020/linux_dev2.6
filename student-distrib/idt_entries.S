@@ -38,7 +38,7 @@
 	isr_stub_##vector:           ;\
 		pushal  				 ;\
 		pushfl					 ;\
-		call test_interrupts 	 ;\
+		call rtc_interrupt	 	 ;\
 		popfl 					 ;\
 		popal					 ;\
 		iret			

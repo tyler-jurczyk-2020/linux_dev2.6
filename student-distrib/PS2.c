@@ -5,7 +5,6 @@
 // input buffer:  contain data from OS to controller
 volatile uint8_t response;
 volatile uint8_t buffer_check;
-static uint8_t dual = 0;
 
 void write_config(uint8_t temp){
     outb(WRITE_CONFIG, REGISTER_PORT);  
