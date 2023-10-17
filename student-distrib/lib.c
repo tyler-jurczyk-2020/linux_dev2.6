@@ -10,6 +10,8 @@
 
 static int screen_x;
 static int screen_y;
+static int cursor_x;
+static int cursor_y;
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
@@ -24,6 +26,11 @@ void clear(void) {
     }
 }
 
+/* void screen_set_xy(x,y)
+inputs : x and y coordinates to set screen coords to
+outputs : none
+function : moves screen_x and screen_y to input xy
+*/
 void screen_set_xy(int x, int y){
 	if(x < 0 || y < 0){
 		return;
@@ -38,6 +45,60 @@ void screen_set_xy(int x, int y){
 	screen_y = y;
 }
 
+/*
+CURSOR FUNCTIONS BELOW
+*/
+/* void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
+ Inputs: starting row (0) and end row (15)
+ Outputs: none
+ Function: enables the cursor and places it at the top left corner
+*/
+void enable_cursor(){
+	outb(0x0A,0x3D4);
+	outb((inb(0x3D5) & 0xC0) | 0,0x3D5);
+ 
+	outb(0x0B,0x3D4);
+	outb((inb(0x3D5) & 0xE0) | 15,0x3D5);
+}
+/* void disable_cursor()
+ Inputs: none
+ Outputs: none
+ Function: disables the cursor
+*/
+void disable_cursor(){
+	outb(0x0A,0x3D4);
+	outb(0x20,0x3D5);
+}
+/* void update_cursor(int x, int y)
+ Inputs: x and y values to set the cursor to
+ Outputs: none
+ Function: resets the cursor
+*/
+void update_cursor_pos(int x, int y){
+	if(x< 0 || x >= NUM_COLS || y<0 || y>=NUM_ROWS){
+		return;
+	}
+	
+	uint16_t pos = y * NUM_COLS + x;
+ 
+	outb(0x0F,0x3D4);
+	outb((uint8_t) (pos & 0xFF),0x3D5);
+	outb(0x0E,0x3D4);
+	outb((uint8_t) ((pos >> 8) & 0xFF),0x3D5);
+}
+/* void update_cursor()
+ Inputs: none
+ Outputs: none
+ Function: moves cursor to where screenx and screeny are
+*/
+void update_cursor(){
+	uint16_t pos = screen_y * NUM_COLS + screen_x;
+ 
+	outb(0x0F,0x3D4);
+	outb((uint8_t) (pos & 0xFF),0x3D5);
+	outb(0x0E,0x3D4);
+	outb((uint8_t) ((pos >> 8) & 0xFF),0x3D5);
+}
 
 /* Standard printf().
  * Only supports the following format strings:

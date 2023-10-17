@@ -81,6 +81,9 @@ outputs: success
 side effects: Video memory is cleared
 */
 int terminal_open(){
+	disable_cursor();
+	enable_cursor();
+	update_cursor_pos(0,0);
 	clear();
 	screen_set_xy(0,0);
 	return 0;
