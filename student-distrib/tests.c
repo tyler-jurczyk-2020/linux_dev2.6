@@ -87,6 +87,9 @@ int test_keyboard(){
 	return 0;
 }
 /* Checkpoint 2 tests */
+
+/* Changing RTC frequency through all frequencies */
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */

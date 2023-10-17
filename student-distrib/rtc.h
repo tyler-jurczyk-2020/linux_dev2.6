@@ -19,12 +19,18 @@
 /* initializing RTC */
 void rtc_init();
 
-/*Changing Interrupt Rate*/
+/* Changing Interrupt Rate */
 void rtc_interrupt_rate(int frequency);
-
 
 /* Handler for RTC interrupt occuring*/
 void rtc_interrupt();
-/**/
 
+/* Resetting Frequency to 2Hz */
+int32_t rtc_open (const uint8_t* filename);
+
+/* Return any RTC interrupts */
+int32_t rtc_read (int32_t fd, void* buf, int32_t nbytes);
+
+/* Change the frequency */
+int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes);
 #endif 
