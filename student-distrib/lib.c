@@ -24,6 +24,21 @@ void clear(void) {
     }
 }
 
+void screen_set_xy(int x, int y){
+	if(x < 0 || y < 0){
+		return;
+	}
+	if(x >= NUM_COLS){
+		return;
+	}
+	if(y >= NUM_ROWS){
+		return;
+	}
+	screen_x = x;
+	screen_y = y;
+}
+
+
 /* Standard printf().
  * Only supports the following format strings:
  * %%  - print a literal '%' character

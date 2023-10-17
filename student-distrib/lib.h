@@ -13,6 +13,8 @@ int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t* buf, int32_t radix);
 int8_t *strrev(int8_t* s);
 uint32_t strlen(const int8_t* s);
+
+void screen_set_xy(int x, int y);
 void clear(void);
 
 void test_interrupts(void);
