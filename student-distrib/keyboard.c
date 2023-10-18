@@ -5,26 +5,86 @@
 #include "x86_desc.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
-static char scan_code_set_1[51] = {
-    0x00, 0x00, '1',  '2',
+static char scan_code_set_1_norm[59] = {
+    0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
-    0x00, 0x00, '\b', 0x00,
+    '-',  '=', '\b',  '\t',
     'q',  'w',  'e',  'r',
     't',  'y',  'u',  'i',
     'o',  'p',  '[',  ']',
     '\n', 0x00,  'a',  's',
     'd',  'f',  'g',  'h',
     'j',  'k',  'l',  ';',
-    0x00, 0x00, 0x00, 0x00,
+    0x00, '`', 0x00, BACK_SLASH,
     'z',  'x',  'c',  'v',
-    'b',  'n',  'm'
+    'b',  'n',  'm',  ',',
+	'.',  '/', 0x00, 0x00,
+	0x00,  ' ', 0x00
+}; 
+
+static char scan_code_set_1_cap[59] = {
+    0x00,  ESC, '1',  '2',
+    '3',  '4',  '5',  '6', 
+    '7',  '8',  '9',  '0',
+    '-',  '=', '\b',  '\t',
+    'Q',  'W',  'E',  'R',
+    'T',  'Y',  'U',  'I',
+    'O',  'P',  '[',  ']',
+    '\n', 0x00,  'A',  'S',
+    'D',  'F',  'G',  'H',
+    'J',  'K',  'L',  ';',
+    QUOTE, '`', 0x00, BACK_SLASH,
+    'Z',  'X',  'C',  'V',
+    'B',  'N',  'M',  ',',
+	'.',  '/', 0x00, 0x00,
+	0x00,  ' ', 0x00
+}; 
+
+static char scan_code_set_1_shift[59] = {
+    0x00,  ESC, '!',  '@',
+    '#',  '$',  '%',  '^', 
+    '&',  '*',  '(',  ')',
+    '_',  '+', '\b',  '\t',
+    'Q',  'W',  'E',  'R',
+    'T',  'Y',  'U',  'I',
+    'O',  'P',  '{',  '}',
+    '\n', 0x00,  'A',  'S',
+    'D',  'F',  'G',  'H',
+    'J',  'K',  'L',  ':',
+    '"', '~', 0x00,  '|',
+    'Z',  'X',  'C',  'V',
+    'B',  'N',  'M',  '<',
+	'>',  '?', 0x00, 0x00,
+	0x00,  ' ', 0x00
+}; 
+
+static char scan_code_set_1_shift_cap[59] = {
+    0x00,  ESC, '!',  '@',
+    '#',  '$',  '%',  '^', 
+    '&',  '*',  '(',  ')',
+    '_',  '+', '\b',  '\t',
+    'q',  'w',  'e',  'r',
+    't',  'y',  'u',  'i',
+    'o',  'p',  '{',  '}',
+    '\n', 0x00,  'a',  's',
+    'd',  'f',  'g',  'h',
+    'j',  'k',  'l',  ':',
+    '"', '~', 0x00,  '|',
+    'z',  'x',  'c',  'v',
+    'b',  'n',  'm',  '<',
+	'>',  '?', 0x00, 0x00,
+	0x00,  ' ', 0x00
 }; 
 
 keyboard_struct keyboard;
 
 //volatile uint8_t keyboard_response;
 volatile uint8_t old_data = 0x00;
+static int shift;
+static int capslock;
+static int alt;
+static int ctrl;
 
 /*
 Init keyboard
@@ -37,6 +97,10 @@ void keyboard_init(){
 		keyboard.buffer[i] = 0;
 	}
 	keyboard.top = 0;
+	shift = 0;
+	capslock = 0;
+	alt = 0;
+	ctrl = 0;
     enable_irq(IRQ1); 
 }                  
 
@@ -49,20 +113,92 @@ side effect: print th typed key on screen
 */
 void handle_keyboard(){
     uint8_t temp;
-    char current_char = 0x00;
-    //cli();
+    uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
     if (temp != old_data){
-        if (temp < 51){
-            current_char = scan_code_set_1[(int)temp];
+		
+		switch (temp)			// check function keys
+		{
+		case LEFT_SHIFT_R:		
+			shift = 0;
+			break;
+		case RIGHT_SHIFT_R:		
+			shift = 0;
+			break;
+		case LEFT_ALT_R:		
+			alt = 0;
+			break;
+		case LEFT_CTRL_R:		
+			ctrl = 0;
+			break;
+
+		case LEFT_SHIFT_P:		
+			shift = 1;
+			break;
+		case RIGHT_SHIFT_P:		
+			shift = 1;
+			break;
+		case LEFT_ALT_P:		
+			alt = 1;
+			break;
+		case LEFT_CTRL_P:		
+			ctrl = 1;
+			break;
+
+		case CAPSLOCK_P:		
+			capslock ^= 1;
+			break;
+
+		default:
+			break;
+		}
+
+        if (temp < 59){
+			if (ctrl == 1){		
+				if (temp == 0x26){				// scan code for l
+					clear();
+					screen_set_xy(0,0);
+					update_cursor_pos(0,0);
+				}		
+				current_char = 0x00;			// do not print it
+			}
+			else if (alt == 1){
+				//do something
+				current_char = 0x00;			// do not print it
+			}
+			else if (capslock == 1 && shift == 1){
+				current_char = scan_code_set_1_shift_cap[(int)temp];
+			}
+			else if (capslock == 1){
+				current_char = scan_code_set_1_cap[(int)temp];
+			}
+			else if (shift == 1){
+				current_char = scan_code_set_1_shift[(int)temp];
+			}
+			else{
+				current_char = scan_code_set_1_norm[(int)temp];
+			}
         }
+
         if (current_char != 0x00){
-            if(current_char == '\b' && keyboard.top > 0){//Check for backspace
+			if (current_char == ESC){
+				// Do something
+			}
+            else if(current_char == '\b' && keyboard.top > 0){//Check for backspace
 				delc();
 				keyboard.top--;
-			}else if(keyboard.top < 128){//dont add to buffer if it's full
+			}
+			else if (current_char == '\t' && keyboard.top < 124){
+				puts("    ");
+				keyboard.buffer[keyboard.top] = ' ';
+				keyboard.buffer[keyboard.top + 1] = ' ';
+				keyboard.buffer[keyboard.top + 2] = ' ';
+				keyboard.buffer[keyboard.top + 3] = ' ';
+				keyboard.top += 4;
+			}
+			else if(keyboard.top < 128){//dont add to buffer if it's full
 				putc(current_char);
-				keyboard.buffer[keyboard.top] = current_char;
+				keyboard.buffer[keyboard.top] = current_char;		
 				keyboard.top++;
 			}
 			
@@ -70,7 +206,6 @@ void handle_keyboard(){
     }
     old_data = temp;
     send_eoi(1);
-    //sti();
 }
 
 
