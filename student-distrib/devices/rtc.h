@@ -2,7 +2,7 @@
 #define _RTC_H
 
 #include "i8259.h"
-#include "lib.h"
+#include "../lib.h"
 
 #define PORT_RW 0x71 //port to read/write from/to byte of CMOS configuration space
 #define PORT_index 0x70 //por tto specify index and disable NMI

@@ -1,6 +1,6 @@
 #ifndef _KEYBOARD_H
 #define _KEYBOARD_H
-#include "lib.h"
+#include "../lib.h"
 
 #define ENABLE_SCANNIG      0xF4
 #define SUCCESS             0xFA

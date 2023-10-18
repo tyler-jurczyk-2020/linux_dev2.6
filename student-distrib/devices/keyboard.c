@@ -1,8 +1,8 @@
 #include "keyboard.h"
 #include "PS2.h"
-#include "lib.h"
+#include "../lib.h"
 #include "i8259.h"
-#include "x86_desc.h"
+#include "../x86_desc.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
 static char scan_code_set_1_norm[59] = {

@@ -1,5 +1,5 @@
 #include "rtc.h"
-#include "lib.h"
+#include "../lib.h"
 
 /* rtc_init
  * DESCRIPTION: Turning on periodic interrupt and setting frequency 

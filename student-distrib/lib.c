@@ -2,7 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
-#include "rtc.h"
+
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
@@ -10,8 +10,6 @@
 
 static int screen_x;
 static int screen_y;
-static int cursor_x;
-static int cursor_y;
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);

@@ -1,7 +1,7 @@
-#include "handlers.h"
+#include "idt_exceptions_syscalls.h"
 #include "idt_entries.h"
-#include "x86_desc.h"
-#include "lib.h"
+#include "../x86_desc.h"
+#include "../lib.h"
 
 /*
 Struct to map vector#'s to their english error meaning

@@ -2,7 +2,7 @@
 #define _IDT_ENTRIES_H
 
 
-#include "types.h"
+#include "../types.h"
 
 #ifndef ASM
 //This table below contains function pointers to their appropriate linker
