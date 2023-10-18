@@ -46,7 +46,7 @@ Read will read from the keyboard buffer into an inputted buffer
 Write will write an inputted buffer onto the screen
 */
 
-extern int terminal_open();
+extern int terminal_open(const uint8_t* filename);
 extern int terminal_close(int32_t fd);
 extern int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes);
 extern int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes);
