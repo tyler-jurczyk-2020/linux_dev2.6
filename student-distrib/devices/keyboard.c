@@ -196,7 +196,7 @@ void handle_keyboard(){
 				keyboard.buffer[keyboard.top + 3] = ' ';
 				keyboard.top += 4;
 			}
-			else if(keyboard.top < 128){//dont add to buffer if it's full
+			else if(current_char != '\b' && keyboard.top < 128){//dont add to buffer if it's full
 				putc(current_char);
 				keyboard.buffer[keyboard.top] = current_char;		
 				keyboard.top++;
