@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "keyboard.h"
 
 #define PASS 1
 #define FAIL 0
@@ -94,6 +95,17 @@ int test_keyboard(){
 	return FAIL;
 }
 /* Checkpoint 2 tests */
+int terminal_test(){
+	TEST_HEADER;
+	terminal_open();
+	uint8_t buf[128];
+	uint8_t size = 128;
+	while(1){
+		size = terminal_read(0, buf, size);
+		terminal_write(0,buf,size);
+	}
+	return PASS;
+}
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -120,4 +132,5 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
+	TEST_OUTPUT("terminal_test", terminal_test());
 }
