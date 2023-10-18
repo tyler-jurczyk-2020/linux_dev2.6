@@ -8,12 +8,19 @@
 #define TYPEMATIC_DATA      0x0F
 #define IRQ1                0x01
 
-#define ESC                 0x80
-#define TAB                 0x81
-#define SHIFT               0x82
-#define CAPSLOCK            0x83
-#define CTRL                0x84
-#define ALT                 0x85
+#define ESC                 0xFF
+
+#define LEFT_SHIFT_R        0xAA
+#define RIGHT_SHIFT_R       0xB6
+#define LEFT_ALT_R          0XB8
+#define LEFT_CTRL_R         0x9D
+
+#define LEFT_SHIFT_P        0x2A
+#define RIGHT_SHIFT_P       0x36
+#define LEFT_ALT_P          0x38
+#define LEFT_CTRL_P         0x1D
+#define CAPSLOCK_P          0x3A
+
 #define QUOTE               39
 #define BACK_SLASH          92
 

@@ -9,54 +9,72 @@ static char scan_code_set_1_norm[59] = {
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
-    '-',  '=', '\b',  TAB,
+    '-',  '=', '\b',  '\t',
     'q',  'w',  'e',  'r',
     't',  'y',  'u',  'i',
     'o',  'p',  '[',  ']',
-    '\n', CTRL,  'a',  's',
+    '\n', 0x00,  'a',  's',
     'd',  'f',  'g',  'h',
     'j',  'k',  'l',  ';',
-    QUOTE, '`', SHIFT, BACK_SLASH,
+    0x00, '`', 0x00, BACK_SLASH,
     'z',  'x',  'c',  'v',
     'b',  'n',  'm',  ',',
-	'.',  '/', SHIFT, 0x00,
-	ALT,  ' ', CAPSLOCK
+	'.',  '/', 0x00, 0x00,
+	0x00,  ' ', 0x00
 }; 
 
 static char scan_code_set_1_cap[59] = {
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
-    '-',  '=', '\b',  TAB,
+    '-',  '=', '\b',  '\t',
     'Q',  'W',  'E',  'R',
     'T',  'Y',  'U',  'I',
     'O',  'P',  '[',  ']',
-    '\n', CTRL,  'A',  'S',
+    '\n', 0x00,  'A',  'S',
     'D',  'F',  'G',  'H',
     'J',  'K',  'L',  ';',
-    QUOTE, '`', SHIFT, BACK_SLASH,
+    QUOTE, '`', 0x00, BACK_SLASH,
     'Z',  'X',  'C',  'V',
     'B',  'N',  'M',  ',',
-	'.',  '/', SHIFT, 0x00,
-	ALT,  ' ', CAPSLOCK
+	'.',  '/', 0x00, 0x00,
+	0x00,  ' ', 0x00
 }; 
 
 static char scan_code_set_1_shift[59] = {
     0x00,  ESC, '!',  '@',
     '#',  '$',  '%',  '^', 
     '&',  '*',  '(',  ')',
-    '_',  '+', '\b',  TAB,
+    '_',  '+', '\b',  '\t',
     'Q',  'W',  'E',  'R',
     'T',  'Y',  'U',  'I',
     'O',  'P',  '{',  '}',
-    '\n', CTRL,  'A',  'S',
+    '\n', 0x00,  'A',  'S',
     'D',  'F',  'G',  'H',
     'J',  'K',  'L',  ':',
-    '"', '~', SHIFT,  '|',
+    '"', '~', 0x00,  '|',
     'Z',  'X',  'C',  'V',
     'B',  'N',  'M',  '<',
-	'>',  '?', SHIFT, 0x00,
-	ALT,  ' ', CAPSLOCK
+	'>',  '?', 0x00, 0x00,
+	0x00,  ' ', 0x00
+}; 
+
+static char scan_code_set_1_shift_cap[59] = {
+    0x00,  ESC, '!',  '@',
+    '#',  '$',  '%',  '^', 
+    '&',  '*',  '(',  ')',
+    '_',  '+', '\b',  '\t',
+    'q',  'w',  'e',  'r',
+    't',  'y',  'u',  'i',
+    'o',  'p',  '{',  '}',
+    '\n', 0x00,  'a',  's',
+    'd',  'f',  'g',  'h',
+    'j',  'k',  'l',  ':',
+    '"', '~', 0x00,  '|',
+    'z',  'x',  'c',  'v',
+    'b',  'n',  'm',  '<',
+	'>',  '?', 0x00, 0x00,
+	0x00,  ' ', 0x00
 }; 
 
 keyboard_struct keyboard;
@@ -95,12 +113,63 @@ side effect: print th typed key on screen
 */
 void handle_keyboard(){
     uint8_t temp;
-    char current_char = 0x00;
-    //cli();
+    uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
     if (temp != old_data){
+		
+		switch (temp)			// check function keys
+		{
+		case LEFT_SHIFT_R:		
+			shift = 0;
+			break;
+		case RIGHT_SHIFT_R:		
+			shift = 0;
+			break;
+		case LEFT_ALT_R:		
+			alt = 0;
+			break;
+		case LEFT_CTRL_R:		
+			ctrl = 0;
+			break;
+
+		case LEFT_SHIFT_P:		
+			shift = 1;
+			break;
+		case RIGHT_SHIFT_P:		
+			shift = 1;
+			break;
+		case LEFT_ALT_P:		
+			alt = 1;
+			break;
+		case LEFT_CTRL_P:		
+			ctrl = 1;
+			break;
+
+		case CAPSLOCK_P:		
+			capslock ^= 1;
+			break;
+
+		default:
+			break;
+		}
+
         if (temp < 59){
-			if (capslock == 1){
+			if (ctrl == 1){		
+				if (temp == 0x26){				// scan code for l
+					clear();
+					screen_set_xy(0,0);
+					update_cursor_pos(0,0);
+				}		
+				current_char = 0x00;			// do not print it
+			}
+			else if (alt == 1){
+				//do something
+				current_char = 0x00;			// do not print it
+			}
+			else if (capslock == 1 && shift == 1){
+				current_char = scan_code_set_1_shift_cap[(int)temp];
+			}
+			else if (capslock == 1){
 				current_char = scan_code_set_1_cap[(int)temp];
 			}
 			else if (shift == 1){
@@ -111,36 +180,23 @@ void handle_keyboard(){
 			}
         }
 
-		switch (current_char)		//check for function keys (esc and tab not included)
-		{
-		case SHIFT:
-			shift ^= 1;
-			break;
-		case ALT:
-			alt ^= 1;
-			break;
-		case CAPSLOCK:
-			capslock ^= 1;
-			break;
-		case CTRL:
-			ctrl ^= 1;
-			break;
-		default:
-			break;
-		}
-
-        if (current_char != 0x00 && current_char != SHIFT && current_char != ALT 
-			&& current_char != CAPSLOCK && current_char != CTRL){
+        if (current_char != 0x00){
 			if (current_char == ESC){
-				// Do something
-			}
-			else if(current_char == TAB){
 				// Do something
 			}
             else if(current_char == '\b' && keyboard.top > 0){//Check for backspace
 				delc();
 				keyboard.top--;
-			}else if(keyboard.top < 128){//dont add to buffer if it's full
+			}
+			else if (current_char == '\t' && keyboard.top < 124){
+				puts("    ");
+				keyboard.buffer[keyboard.top] = ' ';
+				keyboard.buffer[keyboard.top + 1] = ' ';
+				keyboard.buffer[keyboard.top + 2] = ' ';
+				keyboard.buffer[keyboard.top + 3] = ' ';
+				keyboard.top += 4;
+			}
+			else if(keyboard.top < 128){//dont add to buffer if it's full
 				putc(current_char);
 				keyboard.buffer[keyboard.top] = current_char;		
 				keyboard.top++;
@@ -150,7 +206,6 @@ void handle_keyboard(){
     }
     old_data = temp;
     send_eoi(1);
-    //sti();
 }
 
 
