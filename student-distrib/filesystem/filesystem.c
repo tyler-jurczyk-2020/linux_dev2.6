@@ -45,9 +45,32 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 }
 
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {
+    // Need to still sanitize and error check inputs
     inode_t inode_block = fs.inodes[inode];  
     unsigned int i;
-    for (i=0; i<inode_block.length; i++) {
-        // Read data into buffer, need to consider offset 
+    unsigned int bytes_not_read = length;
+    if (offset > inode_block.length) {
+        return bytes_not_read; 
     }
+    for (i=offset/BYTES_PER_BLOCK; i<(inode_block.length/BYTES_PER_BLOCK)+1; i++) {
+        unsigned int j = 0;
+        unsigned int end = BYTES_PER_BLOCK;
+        // Calculate starting location in first block
+        if (offset/BYTES_PER_BLOCK == i) {
+            j = offset%BYTES_PER_BLOCK; 
+        }
+        // Calculate ending location in last block
+        if (inode_block.length/BYTES_PER_BLOCK == i) {
+            unsigned int desired_off = (length%BYTES_PER_BLOCK)+offset; 
+            unsigned int off_limit = (inode_block.length%BYTES_PER_BLOCK);
+            end = (desired_off < off_limit) ? desired_off : off_limit;
+        }
+        // Iterate over data in block
+        for (; j<end; j++) {
+            *buf = fs.data_blocks[i].bytes[j]; 
+            buf++;
+            bytes_not_read--;
+        }
+    } 
+    return bytes_not_read;
 }

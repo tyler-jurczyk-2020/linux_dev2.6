@@ -4,6 +4,7 @@
 #include "../types.h" 
 
 #define FILENAME_LEN 128
+#define BYTES_PER_BLOCK 4096
 
 typedef struct {
     int8_t filename[FILENAME_LEN];
