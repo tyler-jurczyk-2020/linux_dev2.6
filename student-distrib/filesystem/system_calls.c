@@ -1,6 +1,4 @@
-#include "../../syscalls/ece391syscall.h"
-#include <stdint.h>
-
+#include "../types.h"
 
 
 int32_t ece391_open(const uint8_t *filename) {

@@ -24,10 +24,16 @@ typedef struct {
     int32_t length;
     int32_t data_block_num[1023];
 } inode_t;
+
 typedef struct {
-    boot_t boot;
-    inode_t inodes[63];
-    int32_t data_blocks[1023*63];
+    int8_t bytes[4096];
+} data_block_t;
+
+typedef struct {
+    boot_t *boot;
+    inode_t *inodes;
+    data_block_t *data_blocks;
+    uint32_t end;
 } filesystem_t;
 
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
