@@ -2,7 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
-#include "rtc.h"
+
 #define VIDEO       0xB8000
 #define NUM_COLS    80
 #define NUM_ROWS    25
@@ -22,6 +22,80 @@ void clear(void) {
         *(uint8_t *)(video_mem + (i << 1)) = ' ';
         *(uint8_t *)(video_mem + (i << 1) + 1) = ATTRIB;
     }
+}
+
+/* void screen_set_xy(x,y)
+inputs : x and y coordinates to set screen coords to
+outputs : none
+function : moves screen_x and screen_y to input xy
+*/
+void screen_set_xy(int x, int y){
+	if(x < 0 || y < 0){
+		return;
+	}
+	if(x >= NUM_COLS){
+		return;
+	}
+	if(y >= NUM_ROWS){
+		return;
+	}
+	screen_x = x;
+	screen_y = y;
+}
+
+/*
+CURSOR FUNCTIONS BELOW
+*/
+/* void enable_cursor(uint8_t cursor_start, uint8_t cursor_end)
+ Inputs: starting row (0) and end row (15)
+ Outputs: none
+ Function: enables the cursor and places it at the top left corner
+*/
+void enable_cursor(){
+	outb(0x0A,0x3D4);
+	outb((inb(0x3D5) & 0xC0) | 0,0x3D5);
+ 
+	outb(0x0B,0x3D4);
+	outb((inb(0x3D5) & 0xE0) | 15,0x3D5);
+}
+/* void disable_cursor()
+ Inputs: none
+ Outputs: none
+ Function: disables the cursor
+*/
+void disable_cursor(){
+	outb(0x0A,0x3D4);
+	outb(0x20,0x3D5);
+}
+/* void update_cursor(int x, int y)
+ Inputs: x and y values to set the cursor to
+ Outputs: none
+ Function: resets the cursor
+*/
+void update_cursor_pos(int x, int y){
+	if(x< 0 || x >= NUM_COLS || y<0 || y>=NUM_ROWS){
+		return;
+	}
+	
+	uint16_t pos = y * NUM_COLS + x;
+ 
+	outb(0x0F,0x3D4);
+	outb((uint8_t) (pos & 0xFF),0x3D5);
+	outb(0x0E,0x3D4);
+	outb((uint8_t) ((pos >> 8) & 0xFF),0x3D5);
+}
+/* void update_cursor()
+ Inputs: none
+ Outputs: none
+ Function: moves cursor to where screenx and screeny are
+*/
+void update_cursor(){
+	uint16_t pos = screen_y * NUM_COLS + screen_x;
+ 
+	outb(0x0F,0x3D4);
+	outb((uint8_t) (pos & 0xFF),0x3D5);
+	outb(0x0E,0x3D4);
+	outb((uint8_t) ((pos >> 8) & 0xFF),0x3D5);
 }
 
 /* Standard printf().
@@ -147,6 +221,7 @@ format_char_switch:
         }
         buf++;
     }
+	update_cursor();
     return (buf - format);
 }
 
@@ -166,7 +241,7 @@ int32_t puts(int8_t* s) {
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
- *  Function: Output a character to the console */
+ *  Function: Output a character to the console, scrolls up when last row finished */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
@@ -175,9 +250,57 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+		screen_y = (screen_y + (screen_x / NUM_COLS));
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+	if(screen_y == NUM_ROWS){
+		vid_scroll_up();
+		screen_y = NUM_ROWS-1;
+		screen_x = 0;
+	}
+	update_cursor();
+}
+
+/* void delc();
+ * Inputs: none
+ * Return Value: void
+ *  Function: delete the last char putc-ed
+ */
+void delc() {
+    if(screen_x>0){
+		screen_x--;
+		putc(' ');
+		screen_x--; // because putc auto increments
+	}else if(screen_y>0){
+		screen_x = NUM_COLS-1; // delete last char from previous row
+		screen_y--; //move back to previous row
+		putc(' ');
+		screen_x = NUM_COLS-1; 
+		screen_y--; //because putc auto increments
+	}
+	update_cursor();
+}
+/* void vid_scroll_up();
+ * Inputs: none
+ * Return Value: void
+ *  Function: Scrolls up on the screen by copying into previous rows then clearing final row
+ * Side Effects: none
+ */
+void vid_scroll_up(){
+	int i;
+	int j;
+	for(i = 0; i<NUM_COLS; i++){
+		for(j = 0; j<NUM_ROWS-1; j++){
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1)) =  *(uint8_t *)(video_mem + ((NUM_COLS * (j+1) + i) << 1));//repeatedly copy row with next row
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = ATTRIB;
+		}
+	}
+	for(i = 0; i<NUM_COLS; i++){
+		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1)) = ' ';//clear last row
+		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1) + 1) = ATTRIB;
+	}
+	update_cursor();
+	return;
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
@@ -469,10 +592,9 @@ int8_t* strncpy(int8_t* dest, const int8_t* src, uint32_t n) {
  * Return Value: void
  * Function: increments video memory. To be used to test rtc */
 void test_interrupts(void) {
-	rtc_interrupt();
     int32_t i;
     for (i = 0; i < NUM_ROWS * NUM_COLS; i++) {
         video_mem[i << 1]++;
     }
-	send_eoi(8);
+	
 }

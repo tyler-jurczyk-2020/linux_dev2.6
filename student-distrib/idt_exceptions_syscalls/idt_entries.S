@@ -38,13 +38,12 @@
 	isr_stub_##vector:           ;\
 		pushal  				 ;\
 		pushfl					 ;\
-		call test_interrupts 	 ;\
+		call rtc_interrupt	 	 ;\
 		popfl 					 ;\
 		popal					 ;\
 		iret			
 
 
-#TODO REPLACE WITH KEYBOARD HANDLER
 #Below is a macro used to link the C keyboard handler to ASM, pushes args and flags/regs to stack
 #define isr_keyboard(vector)   \
 .globl isr_stub_##vector         ;\

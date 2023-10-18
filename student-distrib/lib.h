@@ -7,13 +7,24 @@
 
 #include "types.h"
 
+void vid_scroll_up(void);
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
+void delc(void);
 int32_t puts(int8_t *s);
 int8_t *itoa(uint32_t value, int8_t* buf, int32_t radix);
 int8_t *strrev(int8_t* s);
 uint32_t strlen(const int8_t* s);
+
+void screen_set_xy(int x, int y);
 void clear(void);
+
+void enable_cursor();
+void disable_cursor();
+void update_cursor();
+void update_cursor_pos(int x, int y);
+
+void test_interrupts(void);
 
 void* memset(void* s, int32_t c, uint32_t n);
 void* memset_word(void* s, int32_t c, uint32_t n);

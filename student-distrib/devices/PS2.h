@@ -1,6 +1,6 @@
 #ifndef _PS2_H
 #define _PS2_H
-#include "lib.h"
+#include "../lib.h"
 #define DATA_PORT           0X60
 #define REGISTER_PORT       0X64
 
@@ -22,10 +22,10 @@
 #define WRITE_MASK          0x02
 #define DUAL_MASK           0x10
 
-
+/* This function writes ps2 configuration register*/
 void write_config(uint8_t temp);
-
+/* This function gets response from ps2 or devices*/
 extern uint8_t get_response();
-
+/* This function writes into specified device*/
 extern void write_to_device(int port, uint8_t data_to_write);
 #endif

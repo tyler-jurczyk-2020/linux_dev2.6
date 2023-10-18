@@ -1,0 +1,22 @@
+CHECKPOINT 1:
+IDT: bootloop, set function pointers in table correctly, but reserved bits were not set correctly, caused system to bootloop
+IDT: Make errors, certain C files were trying to be compiled as ASM, this was because my includes did not have include shields, making certain sections of code being included in places they were not supposed to be + multiple times
+
+RTC: 
+Bug: Incorrectly disabling and enabling interrupts for RTC functionality.
+Solution: Incorporating disabling and enabling within kernel to handle all issues that might occur if RTC were left in an undefined state as a result.
+
+Keyboard: 
+P: handler never entered even called directed from test.
+S: make global variables volatile. Also deleted unnecessary functions. Turns out I am way over thinking it.
+
+P: the result is undefined. deleting an unused function could break it. Simply adding it back would not work. A long sequence of performance needs to be done to make it work.
+S:I messed up a few things in the pic branch to cause this funky bug. I re fetched the master branch and added several files necessary for the keyboard and it just works. The previous bug could also be due to this problem.
+
+Paging:
+Bug: Screen not being written to/cleared correctly after boot
+Solution: The page entry for the video memory was at the wrong location in the page table associated with memory locations 0-4mb.
+Bug: Screen would clear but then the system would hang before kernel.c was able to finish execution.
+Solution: Call to enable_paging() needed to happen at the end of kernel.c instead of happening much earlier during the boot process, such as in boot.S
+
+CHECKPOINT2:

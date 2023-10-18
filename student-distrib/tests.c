@@ -1,6 +1,7 @@
 #include "tests.h"
 #include "x86_desc.h"
 #include "lib.h"
+#include "devices/keyboard.h"
 
 #define PASS 1
 #define FAIL 0
@@ -53,7 +54,7 @@ int divide_by_zero_test(){
 
 	int i = 3/0;
 
-	return 0;
+	return FAIL;
 }
 //checks if dereferencing a nullptr causes an exception, doesn't work now (i think paging needs to be finished)
 int null_ptr_test(){
@@ -61,21 +62,28 @@ int null_ptr_test(){
 	int j = 0;
 	char i = *((char*)(j));
 
-	return 0;
+	return FAIL;
 }
 //Test memory bounds
 int valid_mem_test(char *addr){
 	TEST_HEADER;
 	char i = *addr;
-	return 0;
+	return PASS;
 }
+
+int invalid_mem_test(char *addr){
+	TEST_HEADER;
+	char i = *addr;
+	return FAIL;
+}
+
 //tries a system call
 int sys_call_test(){
 	TEST_HEADER;
 	__asm__("MOVL $42, %EAX");
 	__asm__("INT $0x80");
 
-	return 0;
+	return FAIL;
 }
 
 // infinit loop to try keyboard typing
@@ -84,12 +92,22 @@ int test_keyboard(){
 	while(1){
 
 	}
-	return 0;
+	return FAIL;
 }
 /* Checkpoint 2 tests */
 
-/* Changing RTC frequency through all frequencies */
-
+int terminal_test(){
+	TEST_HEADER;
+	terminal_open();
+	uint8_t buf[128];
+	uint8_t size = 128;
+	while(1){
+		size = terminal_read(0, buf, size);
+		terminal_write(0,buf,size);
+	}
+	return PASS;
+}
+>>>>>>> origin/master
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
@@ -106,14 +124,15 @@ void launch_tests(){
 
     /* Test various bounds of the memory*/
 
-    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB7FFF));
+    //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0xB7FFF));
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB8000));
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB8FFF));
-    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0xB9000));
+    //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0xB9000));
 
-    //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x3FFFFF));
+    //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x3FFFFF));
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x400000));
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
-    TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x800000));
+    //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
+	TEST_OUTPUT("terminal_test", terminal_test());
 }
