@@ -9,7 +9,7 @@ static char scan_code_set_1[51] = {
     0x00, 0x00, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
-    0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, '\b', 0x00,
     'q',  'w',  'e',  'r',
     't',  'y',  'u',  'i',
     'o',  'p',  '[',  ']',
@@ -51,16 +51,21 @@ void handle_keyboard(){
     uint8_t temp;
     char current_char = 0x00;
     //cli();
-    //printf("get to keyboard handler");
     temp = inb(DATA_PORT);
     if (temp != old_data){
         if (temp < 51){
             current_char = scan_code_set_1[(int)temp];
         }
         if (current_char != 0x00){
-            printf("%c", current_char);
-			keyboard.buffer[keyboard.top] = current_char;
-			keyboard.top++;
+            if(current_char == '\b' && keyboard.top > 0){//Check for backspace
+				delc();
+				keyboard.top--;
+			}else if(keyboard.top < 128){//dont add to buffer if it's full
+				putc(current_char);
+				keyboard.buffer[keyboard.top] = current_char;
+				keyboard.top++;
+			}
+			
         }
     }
     old_data = temp;
@@ -70,7 +75,9 @@ void handle_keyboard(){
 
 
 /*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 BELOW ARE TERMINAL DRIVER FUNCTIONS:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
 /*

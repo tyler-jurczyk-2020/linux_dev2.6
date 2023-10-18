@@ -223,6 +223,7 @@ format_char_switch:
         }
         buf++;
     }
+	update_cursor();
     return (buf - format);
 }
 
@@ -242,7 +243,7 @@ int32_t puts(int8_t* s) {
 /* void putc(uint8_t c);
  * Inputs: uint_8* c = character to print
  * Return Value: void
- *  Function: Output a character to the console */
+ *  Function: Output a character to the console, scrolls up when last row finished */
 void putc(uint8_t c) {
     if(c == '\n' || c == '\r') {
         screen_y++;
@@ -251,9 +252,57 @@ void putc(uint8_t c) {
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1)) = c;
         *(uint8_t *)(video_mem + ((NUM_COLS * screen_y + screen_x) << 1) + 1) = ATTRIB;
         screen_x++;
+		screen_y = (screen_y + (screen_x / NUM_COLS));
         screen_x %= NUM_COLS;
-        screen_y = (screen_y + (screen_x / NUM_COLS)) % NUM_ROWS;
     }
+	if(screen_y == NUM_ROWS){
+		vid_scroll_up();
+		screen_y = NUM_ROWS-1;
+		screen_x = 0;
+	}
+	update_cursor();
+}
+
+/* void delc();
+ * Inputs: none
+ * Return Value: void
+ *  Function: delete the last char putc-ed
+ */
+void delc() {
+    if(screen_x>0){
+		screen_x--;
+		putc(' ');
+		screen_x--; // because putc auto increments
+	}else if(screen_y>0){
+		screen_x = NUM_COLS-1; // delete last char from previous row
+		screen_y--; //move back to previous row
+		putc(' ');
+		screen_x = NUM_COLS-1; 
+		screen_y--; //because putc auto increments
+	}
+	update_cursor();
+}
+/* void vid_scroll_up();
+ * Inputs: none
+ * Return Value: void
+ *  Function: Scrolls up on the screen by copying into previous rows then clearing final row
+ * Side Effects: none
+ */
+void vid_scroll_up(){
+	int i;
+	int j;
+	for(i = 0; i<NUM_COLS; i++){
+		for(j = 0; j<NUM_ROWS-1; j++){
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1)) =  *(uint8_t *)(video_mem + ((NUM_COLS * (j+1) + i) << 1));//repeatedly copy row with next row
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = ATTRIB;
+		}
+	}
+	for(i = 0; i<NUM_COLS; i++){
+		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1)) = ' ';//clear last row
+		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1) + 1) = ATTRIB;
+	}
+	update_cursor();
+	return;
 }
 
 /* int8_t* itoa(uint32_t value, int8_t* buf, int32_t radix);
