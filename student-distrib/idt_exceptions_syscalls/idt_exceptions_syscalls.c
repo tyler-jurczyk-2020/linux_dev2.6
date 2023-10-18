@@ -62,6 +62,17 @@ void populate_idt(){
 }
 
 /*
+system_call_handler: Called whenever a INT occurs (vector x80)
+ inputs: parameter(passed through eax) , eflags, general purpose regs
+ outputs: none
+ side effects: holds the system in a permanent while loop and prints the corresponding parameter
+*/
+void system_call_handler(unsigned long parameter, unsigned long flags, register_struct regs){
+	printf("systemcall number: %x",parameter);
+	while(1);
+}
+
+/*
 Exception_Handler: Called whenever an exception occurs (vectors 1-31 on the table)
  inputs: IDT vector, eflags, general purpose regs
  outputs: none
@@ -81,13 +92,49 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 	
 	while(1);
 }
-/*
-system_call_handler: Called whenever a INT occurs (vector x80)
- inputs: parameter(passed through eax) , eflags, general purpose regs
- outputs: none
- side effects: holds the system in a permanent while loop and prints the corresponding parameter
+
+/* 
+**************************************************
+BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
+**************************************************
 */
-void system_call_handler(unsigned long parameter, unsigned long flags, register_struct regs){
-	printf("systemcall number: %x",parameter);
-	while(1);
+uint32_t halt(uint8_t status){
+	putc('1');
+	return 0;
+}
+uint32_t execute(const uint8_t* command){
+	putc('2');
+	return 0;
+}
+uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
+	putc('3');
+	return 0;
+}
+uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
+	putc('4');
+	return 0;
+}
+uint32_t open(const uint8_t* filename){
+	putc('5');
+	return 0;
+}
+uint32_t close(uint32_t fd){
+	putc('6');
+	return 0;
+}
+uint32_t getargs(uint8_t* buf, uint32_t nbytes){
+	putc('7');
+	return 0;
+}
+uint32_t vidmap(uint8_t** screen_start){
+	putc('8');
+	return 0;
+}
+uint32_t set_handler(uint32_t signum, void* handler_address){
+	putc('9');
+	return 0;
+}
+uint32_t sigreturn(void){
+	putc('A');
+	return 0;
 }
