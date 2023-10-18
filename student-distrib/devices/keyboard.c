@@ -196,7 +196,7 @@ void handle_keyboard(){
 				keyboard.buffer[keyboard.top + 3] = ' ';
 				keyboard.top += 4;
 			}
-			else if(keyboard.top < 128){//dont add to buffer if it's full
+			else if(current_char != '\b' && keyboard.top < 128){//dont add to buffer if it's full
 				putc(current_char);
 				keyboard.buffer[keyboard.top] = current_char;		
 				keyboard.top++;
@@ -218,11 +218,11 @@ BELOW ARE TERMINAL DRIVER FUNCTIONS:
 /*
 terminal_open
 description: Clears the video memory and prepares the terminal to be written to
-inputs: none
+inputs: ignored
 outputs: success
 side effects: Video memory is cleared
 */
-int terminal_open(){
+int terminal_open(const uint8_t* filename){
 	disable_cursor();
 	enable_cursor();
 	update_cursor_pos(0,0);
