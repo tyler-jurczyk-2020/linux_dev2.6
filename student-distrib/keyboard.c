@@ -134,7 +134,7 @@ void handle_keyboard(){
 			if (current_char == ESC){
 				// Do something
 			}
-			else if(current_char = TAB){
+			else if(current_char == TAB){
 				// Do something
 			}
             else if(current_char == '\b' && keyboard.top > 0){//Check for backspace
