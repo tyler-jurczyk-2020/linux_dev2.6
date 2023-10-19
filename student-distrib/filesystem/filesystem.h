@@ -37,9 +37,19 @@ typedef struct {
     uint32_t end;
 } filesystem_t;
 
+typedef struct {
+    int32_t *file_ops;
+    int32_t inode;
+    int32_t file_pos;
+    int32_t flags;
+} process_control_t;
+
 int32_t read_dentry_by_name (const uint8_t* fname, dentry_t* dentry);
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry);
 int32_t read_data (uint32_t inode, uint32_t offset, uint8_t* buf, uint32_t length);
 
+
+extern process_control_t pcb;
+extern filesystem_t fs;
 
 #endif

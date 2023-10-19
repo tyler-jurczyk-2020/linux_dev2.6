@@ -4,6 +4,7 @@
 #include "../lib.h"
 
 filesystem_t fs;
+process_control_t pcb;
 
 
 void init_filesystem(module_t* mod_info) {
@@ -11,6 +12,10 @@ void init_filesystem(module_t* mod_info) {
     fs.inodes = ((inode_t *)(mod_info->mod_start)) + 1;
     fs.data_blocks = ((data_block_t *)(mod_info->mod_start)) + fs.boot->inode_count + 2;  
     fs.end = mod_info->mod_end;
+}
+
+void init_process_control() {
+    // Initialize stdin and stdout file descriptors
 }
 
 int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
@@ -65,12 +70,10 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
             unsigned int off_limit = (inode_block.length%BYTES_PER_BLOCK);
             end = (desired_off < off_limit) ? desired_off : off_limit;
         }
-        // Iterate over data in block
-        for (; j<end; j++) {
-            *buf = fs.data_blocks[i].bytes[j]; 
-            buf++;
-            bytes_not_read--;
-        }
+        // May want to check pointer returned by memcpy 
+        memcpy(buf, fs.data_blocks+i, end - j);
+        buf += end-j;
+        bytes_not_read -= end - j;
     } 
     return bytes_not_read;
 }
