@@ -1,6 +1,6 @@
 #ifndef _PS2_H
 #define _PS2_H
-#include "lib.h"
+#include "../lib.h"
 #define DATA_PORT           0X60
 #define REGISTER_PORT       0X64
 

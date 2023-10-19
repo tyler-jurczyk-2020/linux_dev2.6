@@ -17,18 +17,33 @@
 		sti                      ;\
 		iret		
 
-#Below is a macro used to link the C syscall handler to ASM, pushes arguments and flags/regs to stack
-#define isr_system_call(vector)   \
-.globl isr_stub_##vector         ;\
-.align 4						 ;\
-	isr_stub_##vector:           ;\
-		pushal  				 ;\
-		pushfl					 ;\
-		pushl %eax		         ;\
-		call system_call_handler ;\
-		addl $4, %ESP		     ;\
-		popfl 					 ;\
-		popal					 ;\
+#Below is a macro used to link the C syscall handlers to ASM, pushes arguments and flags/regs to stack
+#Makes use of a jump table defined at the end of this file
+#First saves flags/regs, then checks if syscall num is valid, returns -1 if not
+# uses jump table to call handler, then pops args off
+#define isr_system_call(vector)   	 \
+.globl isr_stub_##vector         	 ;\
+.align 4						 	 ;\
+	isr_stub_##vector:           	 ;\
+		pushal  				  	 ;\
+		pushfl					  	 ;\
+		cmpl $0, %EAX			 	 ;\
+		jle isr_invalid_##vector 	 ;\
+		cmpl $10, %EAX			  	 ;\
+		ja isr_invalid_##vector  	 ;\
+		pushl %EDX		         	 ;\
+		pushl %ECX				 	 ;\
+		pushl %EBX				 	 ;\
+		call *syscall_table(,%EAX,4) ;\
+		popl %EBX			     	 ;\
+		popl %ECX			     	 ;\
+		popl %EDX			     	 ;\
+		jmp isr_leave_##vector 	 	 ;\
+	isr_invalid_##vector: 	  	 	 ;\
+		movl $-1, %EAX    	 	 	 ;\
+	isr_leave_##vector:			 	 ;\
+		popfl 					 	 ;\
+		popal					 	 ;\
 		iret			
 		
 #Below is a macro used to link the C rtc handler to ASM, pushes args and flags/regs to stack
@@ -44,7 +59,6 @@
 		iret			
 
 
-#TODO REPLACE WITH KEYBOARD HANDLER
 #Below is a macro used to link the C keyboard handler to ASM, pushes args and flags/regs to stack
 #define isr_keyboard(vector)   \
 .globl isr_stub_##vector         ;\
@@ -257,4 +271,16 @@ isr_stub_table:
 	.long 0
 	.long 0
 
-	
+.globl syscall_table
+syscall_table:
+	.long 0
+	.long halt
+	.long execute
+	.long read
+	.long write
+	.long open
+	.long close
+	.long getargs
+	.long vidmap
+	.long set_handler
+	.long sigreturn

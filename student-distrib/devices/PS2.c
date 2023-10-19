@@ -1,4 +1,4 @@
-#include "lib.h"
+#include "../lib.h"
 #include "PS2.h"
 
 // output buffer: contain data from controller to OS

@@ -1,7 +1,7 @@
 #ifndef HANDLERS_H_
 #define HANDLERS_H_
 
-#include "types.h"
+#include "../types.h"
 
 /*Custom struct to hold the results of pushal*/
 typedef struct  __attribute__((packed)) register_struct  {
@@ -28,4 +28,19 @@ void system_call_handler(unsigned long vector, unsigned long flags, register_str
 //function to fill up the IDT
 void populate_idt();
 
+/*
+**********************************
+Below are syscall function headers
+**********************************
+*/
+uint32_t halt(uint8_t status);
+uint32_t execute(const uint8_t* command);
+uint32_t read(uint32_t fd, void* buf, uint32_t nbytes);
+uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes);
+uint32_t open(const uint8_t* filename);
+uint32_t close(uint32_t fd);
+uint32_t getargs(uint8_t* buf, uint32_t nbytes);
+uint32_t vidmap(uint8_t** screen_start);
+uint32_t set_handler(uint32_t signum, void* handler_address);
+uint32_t sigreturn(void);
 #endif

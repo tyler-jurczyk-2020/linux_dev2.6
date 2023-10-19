@@ -5,13 +5,13 @@
 #include "multiboot.h"
 #include "x86_desc.h"
 #include "lib.h"
-#include "i8259.h"
+#include "devices/i8259.h"
 #include "debug.h"
 #include "tests.h"
-#include "handlers.h"
+#include "idt_exceptions_syscalls/idt_exceptions_syscalls.h"
 #include "paging.h"
-#include "rtc.h"
-#include "keyboard.h"
+#include "devices/rtc.h"
+#include "devices/keyboard.h"
 
 //uncomment to run tests
 #define RUN_TESTS 1
