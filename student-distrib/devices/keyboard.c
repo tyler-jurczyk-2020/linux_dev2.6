@@ -16,7 +16,7 @@ static char scan_code_set_1_norm[59] = {
     '\n', 0x00,  'a',  's',
     'd',  'f',  'g',  'h',
     'j',  'k',  'l',  ';',
-    0x00, '`', 0x00, BACK_SLASH,
+    QUOTE, '`', 0x00, BACK_SLASH,
     'z',  'x',  'c',  'v',
     'b',  'n',  'm',  ',',
 	'.',  '/', 0x00, 0x00,
@@ -85,6 +85,7 @@ static int shift;
 static int capslock;
 static int alt;
 static int ctrl;
+static int holding_count;
 
 /*
 Init keyboard
@@ -101,6 +102,7 @@ void keyboard_init(){
 	capslock = 0;
 	alt = 0;
 	ctrl = 0;
+	holding_count = HOLDING_INIT;
     enable_irq(IRQ1); 
 }                  
 
@@ -115,42 +117,69 @@ void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
-    if (temp != old_data){
+    if (temp != old_data || holding_count == 0){
 		
-		switch (temp)			// check function keys
-		{
-		case LEFT_SHIFT_R:		
-			shift = 0;
-			break;
-		case RIGHT_SHIFT_R:		
-			shift = 0;
-			break;
-		case LEFT_ALT_R:		
-			alt = 0;
-			break;
-		case LEFT_CTRL_R:		
-			ctrl = 0;
-			break;
+		if (temp != old_data){				// function key should only be triggered once
+			
+			holding_count = HOLDING_INIT;		
 
-		case LEFT_SHIFT_P:		
-			shift = 1;
-			break;
-		case RIGHT_SHIFT_P:		
-			shift = 1;
-			break;
-		case LEFT_ALT_P:		
-			alt = 1;
-			break;
-		case LEFT_CTRL_P:		
-			ctrl = 1;
-			break;
+			if (old_data == DOUBLE_CODE){	// check for special double scan code
+				switch (temp)
+				{
+				case RIGHT_ALT_R:
+					alt = 0;
+					break;
+				case RIGHT_CTRL_R:
+					ctrl = 0;
+					break;
 
-		case CAPSLOCK_P:		
-			capslock ^= 1;
-			break;
+				case RIGHT_ALT_P:
+					alt = 1;
+					break;
+				case RIGHT_CTRL_P:
+					ctrl = 1;
+					break;
+				default:
+					break;
+				}
+			}
+			else{
+				switch (temp)			// check normal function keys
+				{
+				case LEFT_SHIFT_R:		
+					shift = 0;
+					break;
+				case RIGHT_SHIFT_R:		
+					shift = 0;
+					break;
+				case LEFT_ALT_R:		
+					alt = 0;
+					break;
+				case LEFT_CTRL_R:		
+					ctrl = 0;
+					break;
 
-		default:
-			break;
+				case LEFT_SHIFT_P:		
+					shift = 1;
+					break;
+				case RIGHT_SHIFT_P:		
+					shift = 1;
+					break;
+				case LEFT_ALT_P:		
+					alt = 1;
+					break;
+				case LEFT_CTRL_P:		
+					ctrl = 1;
+					break;
+
+				case CAPSLOCK_P:		
+					capslock ^= 1;
+					break;
+
+				default:
+					break;
+				}
+			}
 		}
 
         if (temp < 59){
@@ -204,6 +233,10 @@ void handle_keyboard(){
 			
         }
     }
+	else if (temp == old_data && holding_count != 0){
+		holding_count --;
+		//printf(" get here ");
+	}
     old_data = temp;
     send_eoi(1);
 }
