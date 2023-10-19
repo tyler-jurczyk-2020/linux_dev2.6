@@ -147,6 +147,6 @@ void launch_tests(){
 	//TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
     
-    test_file_open();
-    test_file_read();
+    test_dir_open();
+    test_dir_read();
 }
