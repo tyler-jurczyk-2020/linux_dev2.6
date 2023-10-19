@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "devices/keyboard.h"
+#include "devices/rtc.h"
 
 #define PASS 1
 #define FAIL 0
@@ -112,6 +113,30 @@ int terminal_test(){
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
+int rtc_test(){
+	TEST_HEADER;
+	
+	uint8_t buf[128];
+	int req;
+	int i;
+	terminal_open();
+	rtc_open(0);
+	buf[0] = 0;
+	while(1){
+		for (req = 2; req <= 1024; req*=2){
+			printf("frequence: %d  ", req);
+			rtc_write(0, buf, req);
+			for (i = 0; i < 2*req; i++){
+				rtc_read(0, buf, req); 
+			}
+			printf("\n");
+		}
+		clear();
+		screen_set_xy(0,0);
+		update_cursor_pos(0,0);
+	}
+	return PASS; 
+}
 
 /* Test suite entry point */
 void launch_tests(){
@@ -134,5 +159,6 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
-	TEST_OUTPUT("terminal_test", terminal_test());
+	//TEST_OUTPUT("terminal_test", terminal_test());
+	TEST_OUTPUT("rtc_test", rtc_test());
 }

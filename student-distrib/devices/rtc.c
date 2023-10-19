@@ -32,7 +32,8 @@ void rtc_init() {
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
 int rtc_interrupt_rate(uint32_t frequency) {
-	int updated_rate;
+	printf("reverived f: %d  ", frequency);
+	int updated_rate = 6;
 
 	//ERROR CHECKING
 	if (frequency < LOW_FREQ || frequency > HIGH_FREQ) {
@@ -50,7 +51,8 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		updated_rate = 6; //0x06
 	} else if (frequency == 512) {	
 		updated_rate = 7; //0x07
-	} else if (frequency == 256) {	
+	} else if (frequency == 256) {
+			
 		updated_rate = 8; //0x08
 	} else if (frequency == 128) {	
 		updated_rate = 9; //0x09
@@ -86,7 +88,7 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	
 	outb(Register_C, PORT_index); //selecting register C
 	inb(PORT_RW); //clearing the contents
-	test_interrupts();
+	//test_interrupts();
 	send_eoi(8);
 
 	interrupt = 1; //interrupt occured
@@ -165,8 +167,9 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	interrupt = 0; //no interrupts has occured
 	while (interrupt != 1) {
 		//empty while loop
+		
 	}
-
+	printf("1");
 	interrupt = 0; //resetting flag to 0, no interrupt occurs
 	return 0;
 
@@ -205,11 +208,12 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	*/
 
 	//ERROR CHECKING
-	if (nbytes != 4 || buf == NULL) {
+	// nbytes != 4 ||
+	if ( buf == NULL) {
 		return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	}
 
-	uint32_t rate = *((uint32_t*)buf);
+	uint32_t rate = nbytes;
 	int new_rate = rtc_interrupt_rate(rate);
 	
 	new_rate &= rate_value; 
