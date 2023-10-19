@@ -15,12 +15,15 @@
 #define IRQ8 8 //irq number
 #define rate_value 0x0F //rate must be above 2 and not over 15
 #define MAX_FREQ 32768 //max interrupt rate of RTC (Hz)
+#define LOW_FREQ 2 //lowest possible frequency that RTC can run at (Hz)
+#define HIGH_FREQ 1024 //highest possible frequency that our kernel RTC should run at (Hz) [Max typically 8192 Hz]
+
 
 /* initializing RTC */
 void rtc_init();
 
 /* Changing Interrupt Rate */
-void rtc_interrupt_rate(int frequency);
+int rtc_interrupt_rate(int frequency);
 
 /* Handler for RTC interrupt occuring*/
 void rtc_interrupt();
@@ -33,4 +36,8 @@ int32_t rtc_read (int32_t fd, void* buf, int32_t nbytes);
 
 /* Change the frequency */
 int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes);
+
+/* Close specified file descriptor */
+int32_t rtc_close (int32_t fd);
+
 #endif 

@@ -31,24 +31,47 @@ void rtc_init() {
  * RETURN VALUE: none
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
-void rtc_interrupt_rate(int frequency) {
-	//Check for frequency range is accurate
-	
-	/* TODO: Maximize frequency to virtualize*/
-	int rate = 0;
-	rate &= rate_value; 
+int rtc_interrupt_rate(uint32_t frequency) {
+	uint32_t updated_rate;
+	int holder = 0;
 
-	cli(); //disable interrupts
+	//ERROR CHECKING
+	if (frequency < LOW_FREQ || frequency > HIGH_FREQ) {
+		return -1;
+	} 
 
-	outb(Register_A, PORT_index); //set index to reg A
-	char prev = inb(PORT_RW); //initial value of reg A
-	outb(Register_A, PORT_RW); //reset index to A
-	outb( (prev & 0xF0) | rate, PORT_RW);
+	//Checking if frequency is a power of 2 
+	if ((frequency & (frequency - 1))) {
+		return -1; 
+	}
 	
-	//enabling interrupts
-	enable_irq(IRQ8); 
-	sti();
-	
+	//frequency =  32768 >> (rate-1);
+	//updated_rate = 16 - frequency???????
+	if (frequency == 1024) {	
+		updated_rate = 6; //0x06
+	} else if (frequency == 512) {	
+		updated_rate = 7; //0x07
+	} else if (frequency == 256) {	
+		updated_rate = 8; //0x08
+	} else if (frequency == 128) {	
+		updated_rate = 9; //0x09
+	} else if (frequency == 64) {	
+		updated_rate = 10; //0x0A
+	} else if (frequency == 32) {	
+		updated_rate = 11; //0x0B
+	} else if (frequency == 16) {	
+		updated_rate = 12; //0x0C
+	} else if (frequency == 8) {	
+		updated_rate = 13; //0x0D
+	} else if (frequency == 4) {	
+		updated_rate = 14; //0x0E
+	} else if (frequency == 2) {	
+		updated_rate = 15; //0x0F
+	} else if (frequency == 0) {
+		updated_rate = 0;
+	}
+
+	return updated_rate;
 }
 
 /* rtc_interrupt
@@ -74,7 +97,9 @@ void rtc_interrupt_rate(int frequency) {
  * INPUTS: 
  			filename - pointer to filename
  * OUTPUT: none
- * RETURN VALUE: 0 - Success
+ * RETURN VALUE: 
+ 			0 - Success
+			-1 - Failure
  * SIDE EFFECT: none
  */
  int32_t rtc_open (const uint8_t* filename) {
@@ -84,20 +109,18 @@ void rtc_interrupt_rate(int frequency) {
 		3. For simplicity, RTC interrupts should remain on at all times. 	
 	*/
 
-	//rate *= 2
-	int rate = 0;
-	rate &= rate_value; 
+	//ERROR CHECKING
 
-	cli(); //disable interrupts
+	rtc_init();
+
+	//rate *= 2
+	int rate = LOW_FREQ; //Lowest possible frequency, starting with low frequency 
+	rate &= rate_value; //rate above 2 and not over 15
 
 	outb(Register_A, PORT_index); //set index to reg A
 	char prev = inb(PORT_RW); //initial value of reg A
 	outb(Register_A, PORT_RW); //reset index to A
 	outb( (prev & 0xF0) | rate, PORT_RW); //write rate to A, rate is bottom 4 bits
-	
-	//enabling interrupts
-	enable_irq(IRQ8); 
-	sti();
 
 	return 0; // Success
 
@@ -111,13 +134,15 @@ void rtc_interrupt_rate(int frequency) {
  			buf - pointer to buffer
 			nbytes - number of bytes
  * OUTPUT: none
- * RETURN VALUE: return 0
+ * RETURN VALUE: 
+ 			0 - Success
+			-1 - Failure
  * SIDE EFFECT: none
  */
  int32_t rtc_read (int32_t fd, void* buf, int32_t nbytes) {
 	/*
 		Hint:
-		1. Behaves like an infinite loop waiting ofr some event to be true
+		1. Behaves like an infinite loop waiting for some event to be true
 			a. Event => RTC Interrupt
 		2. When event occurs, record that state and return it
 
@@ -126,7 +151,19 @@ void rtc_interrupt_rate(int frequency) {
 		2. Jump Table reference by task's file array to call from generic handler into file-type-specific function
 			a. Inserted into file array on open sys call
 	*/
-	return 0; // Success
+
+	//ERROR CHECKING
+	// if (nbytes != 4 || buf == NULL) {
+	// 	return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
+	// }
+
+	int flags = 0; //no interrupts has occured
+	while (flags != 1) {
+		//empty while loop
+	}
+
+	flags = 0; //resetting flag to 0, no interrupt occurs
+	return 0;
 
  }
 
@@ -159,22 +196,42 @@ void rtc_interrupt_rate(int frequency) {
 		1. Accept 4-byte integer specifying interrupt rate in Hz
 		2. Set the rate of periodic interrupts
 		3. Writes to regular files return -1, indicating failure since file system is read-only
-		4. Call returns # of bytes written pr -1 on failure
+		4. Call returns # of bytes written or -1 on failure
 	*/
 
-	int rate = 0;
-	rate &= rate_value; 
+	//ERROR CHECKING
+	if (nbytes != 4 || buf == NULL) {
+		return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
+	}
 
-	cli(); //disable interrupts
+	uint32_t rate = *((uint32_t*)buf);
+	int new_rate = rtc_interrupt_rate(rate);
+	
+	new_rate &= rate_value; 
 
 	outb(Register_A, PORT_index); //set index to reg A
 	char prev = inb(PORT_RW); //initial value of reg A
 	outb(Register_A, PORT_RW); //reset index to A
-	outb( (prev & 0xF0) | rate, PORT_RW); //write rate to A, rate is bottom 4 bits
-	
-	//enabling interrupts
-	enable_irq(IRQ8); 
-	sti();
+	outb((prev & 0xF0) | new_rate, PORT_RW); //write rate to A, rate is bottom 4 bits
 
-	return -1; //Failed 
+	return 0; //Success 
  }
+
+
+ /* rtc_close
+ * DESCRIPTION: Closes the specified file descriptor and makes it available 
+				for return from later calls to open
+ * INPUTS: 
+ 			fd - an array for the data structure for a file descriptor
+ * OUTPUT: none
+ * RETURN VALUE:
+			0 - Success
+			-1 - Failure
+ * SIDE EFFECT: none
+ */
+int32_t rtc_close (int32_t fd) {
+
+	//ERROR CHECKING
+
+	return 0;
+}

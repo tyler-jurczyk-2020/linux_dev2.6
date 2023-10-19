@@ -107,7 +107,7 @@ int terminal_test(){
 	}
 	return PASS;
 }
->>>>>>> origin/master
+
 /* Checkpoint 3 tests */
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
