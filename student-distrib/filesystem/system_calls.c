@@ -1,6 +1,6 @@
+#include "../lib.h"
 #include "../types.h"
 #include "filesystem.h"
-#include <string.h>
 
 
 // For now, the follow operations only allow for one file to be open at a time!!
@@ -63,8 +63,8 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
             return res;
         }
         // May be problematic for shorter filenames?
-        memcpy(buf, dentry.filename, 128);        
-        buf += 128;
+        memcpy(buf, dentry.filename, FILENAME_LEN);        
+        buf += FILENAME_LEN;
     }
     return 0; 
 }

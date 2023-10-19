@@ -23,7 +23,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
         return -1; // Invalid index 
     }
     // For now copy whole filename, but not all files have 128 chars in name 
-    memcpy(dentry->filename, fs.boot->dir_entries[index].filename, 128);
+    memcpy(dentry->filename, fs.boot->dir_entries[index].filename, FILENAME_LEN);
     dentry->filetype = fs.boot->dir_entries[index].filetype;
     dentry->inode_num = fs.boot->dir_entries[index].inode_num;
     return 0;     
@@ -32,17 +32,8 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     unsigned int i;
     for(i=0; i<fs.boot->dir_count; i++) {
-        int found_file = 0;
-        unsigned int j;
-        for(j=0; j<FILENAME_LEN; j++) {
-            if (fname[j] != fs.boot->dir_entries[i].filename[j]) {
-                break; 
-            }
-            else if (j == FILENAME_LEN - 1) {
-                found_file = 1;
-            }
-        } 
-        if (found_file) {
+        int cmp = strncmp((int8_t *)fname, fs.boot->dir_entries[i].filename, strlen((int8_t *)fname));
+        if (cmp == 0) {
             return read_dentry_by_index(i, dentry);
         }
     }
@@ -55,9 +46,9 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
     unsigned int i;
     unsigned int bytes_not_read = length;
     if (offset > inode_block.length) {
-        return bytes_not_read; 
+        return -1; // Offset out of bounds 
     }
-    for (i=offset/BYTES_PER_BLOCK; i<(inode_block.length/BYTES_PER_BLOCK)+1; i++) {
+    for (i=offset/BYTES_PER_BLOCK; i<((offset+length-1)/BYTES_PER_BLOCK)+1; i++) {
         unsigned int j = 0;
         unsigned int end = BYTES_PER_BLOCK;
         // Calculate starting location in first block
@@ -65,13 +56,13 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
             j = offset%BYTES_PER_BLOCK; 
         }
         // Calculate ending location in last block
-        if (inode_block.length/BYTES_PER_BLOCK == i) {
-            unsigned int desired_off = (length%BYTES_PER_BLOCK)+offset; 
-            unsigned int off_limit = (inode_block.length%BYTES_PER_BLOCK);
-            end = (desired_off < off_limit) ? desired_off : off_limit;
+        if ((offset+length-1)/BYTES_PER_BLOCK == i) {
+            unsigned int desired_end = (offset+length)%(BYTES_PER_BLOCK+1);
+            unsigned int actual_end = (inode_block.length)%(BYTES_PER_BLOCK+1);
+            end = (desired_end > actual_end) ? actual_end : desired_end;
         }
         // May want to check pointer returned by memcpy 
-        memcpy(buf, fs.data_blocks+i, end - j);
+        memcpy(buf, fs.data_blocks+inode_block.data_block_num[i]-1, end-j);
         buf += end-j;
         bytes_not_read -= end - j;
     } 
