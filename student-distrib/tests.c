@@ -99,7 +99,9 @@ int test_keyboard(){
 
 int terminal_test(){
 	TEST_HEADER;
-	terminal_open();
+	uint8_t name[1];
+	name[0] = 'A';
+	terminal_open(name);
 	uint8_t buf[128];
 	uint8_t size = 128;
 	while(1){
@@ -110,6 +112,15 @@ int terminal_test(){
 }
 
 /* Checkpoint 3 tests */
+int syscall_jump(){
+	TEST_HEADER;
+	uint8_t name[1];
+	name[0] = 'A';
+	terminal_open(name);
+	__asm__("MOVL $5, %EAX");
+	__asm__("INT $0x80");
+	return PASS;
+}
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
 
