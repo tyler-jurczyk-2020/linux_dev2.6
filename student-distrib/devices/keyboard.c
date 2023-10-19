@@ -5,7 +5,7 @@
 #include "../x86_desc.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
-static char scan_code_set_1_norm[59] = {
+static char scan_code_set_1_norm[59] = {	// 59 characters for what we care
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
@@ -94,7 +94,7 @@ no output
 */
 void keyboard_init(){
 	int i;
-	for(i = 0; i<128; i++){
+	for(i = 0; i<128; i++){			// size = 128
 		keyboard.buffer[i] = 0;
 	}
 	keyboard.top = 0;
@@ -213,22 +213,31 @@ void handle_keyboard(){
 			if (current_char == ESC){
 				// Do something
 			}
-            else if(current_char == '\b' && keyboard.top > 0){//Check for backspace
+            else if(current_char == '\b' && keyboard.top > 0){			//Check for backspace
 				delc();
 				keyboard.top--;
 			}
-			else if (current_char == '\t' && keyboard.top < 124){
+			else if (current_char == '\t' && keyboard.top < 124){		// 123 + 4 = 127 , should not write after this position, leave a space for '\n'
 				puts("    ");
 				keyboard.buffer[keyboard.top] = ' ';
 				keyboard.buffer[keyboard.top + 1] = ' ';
 				keyboard.buffer[keyboard.top + 2] = ' ';
 				keyboard.buffer[keyboard.top + 3] = ' ';
-				keyboard.top += 4;
+				keyboard.top += 4;										// 4 space for tab
 			}
-			else if(current_char != '\b' && keyboard.top < 128){//dont add to buffer if it's full
-				putc(current_char);
-				keyboard.buffer[keyboard.top] = current_char;		
-				keyboard.top++;
+			else if(current_char != '\b' && keyboard.top < 128 && current_char != '\t'){//dont add to buffer if it's full
+				if (keyboard.top == 127){								// check when reaches top
+					if (current_char == '\n'){
+						putc(current_char);
+						keyboard.buffer[keyboard.top] = current_char;		
+						keyboard.top++;
+					}
+				}
+				else{
+					putc(current_char);
+					keyboard.buffer[keyboard.top] = current_char;		
+					keyboard.top++;
+				}
 			}
 			
         }

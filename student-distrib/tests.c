@@ -111,26 +111,14 @@ int terminal_test(){
 	return PASS;
 }
 
-/* Checkpoint 3 tests */
-int syscall_jump(){
+int rtc_test(){
 	TEST_HEADER;
 	uint8_t name[1];
 	name[0] = 'A';
-	terminal_open(name);
-	__asm__("MOVL $5, %EAX");
-	__asm__("INT $0x80");
-	return PASS;
-}
-/* Checkpoint 4 tests */
-/* Checkpoint 5 tests */
-
-int rtc_test(){
-	TEST_HEADER;
-	
 	uint8_t buf[128];
 	int req;
 	int i;
-	terminal_open();
+	terminal_open(name);
 	rtc_open(0);
 	buf[0] = 0;
 	while(1){
@@ -148,6 +136,20 @@ int rtc_test(){
 	}
 	return PASS; 
 }
+/* Checkpoint 3 tests */
+int syscall_jump(){
+	TEST_HEADER;
+	uint8_t name[1];
+	name[0] = 'A';
+	terminal_open(name);
+	__asm__("MOVL $5, %EAX");
+	__asm__("INT $0x80");
+	return PASS;
+}
+/* Checkpoint 4 tests */
+/* Checkpoint 5 tests */
+
+
 
 /* Test suite entry point */
 void launch_tests(){
@@ -170,6 +172,6 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
-	//TEST_OUTPUT("terminal_test", terminal_test());
-	TEST_OUTPUT("rtc_test", rtc_test());
+	TEST_OUTPUT("terminal_test", terminal_test());
+	//TEST_OUTPUT("rtc_test", rtc_test());
 }

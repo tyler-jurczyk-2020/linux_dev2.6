@@ -52,7 +52,6 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	} else if (frequency == 512) {	
 		updated_rate = 7; //0x07
 	} else if (frequency == 256) {
-			
 		updated_rate = 8; //0x08
 	} else if (frequency == 128) {	
 		updated_rate = 9; //0x09
