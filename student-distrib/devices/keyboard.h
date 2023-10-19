@@ -10,6 +10,14 @@
 
 #define ESC                 0xFF
 
+#define DOUBLE_CODE         0xE0
+
+#define RIGHT_ALT_P         0x38
+#define RIGHT_CTRL_P        0x1D
+
+#define RIGHT_ALT_R         0xB8
+#define RIGHT_CTRL_R        0x9D
+
 #define LEFT_SHIFT_R        0xAA
 #define RIGHT_SHIFT_R       0xB6
 #define LEFT_ALT_R          0XB8
@@ -23,6 +31,7 @@
 
 #define QUOTE               39
 #define BACK_SLASH          92
+#define HOLDING_INIT        3
 
 
 /* keyboard struct, feel free to add flags/anything else necessary.*/
