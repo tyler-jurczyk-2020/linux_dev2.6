@@ -12,7 +12,7 @@
  */
 
 void rtc_init() {
-	
+	interrupt = 0; //no interrupt occured
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
 	outb(Register_B, PORT_index); //setting index
@@ -32,8 +32,7 @@ void rtc_init() {
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
 int rtc_interrupt_rate(uint32_t frequency) {
-	uint32_t updated_rate;
-	int holder = 0;
+	int updated_rate;
 
 	//ERROR CHECKING
 	if (frequency < LOW_FREQ || frequency > HIGH_FREQ) {
@@ -45,9 +44,9 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		return -1; 
 	}
 	
-	//frequency =  32768 >> (rate-1);
-	//updated_rate = 16 - frequency???????
-	if (frequency == 1024) {	
+	//frequency = 32768 >> (rate-1)
+	//All posible frequency rates
+	if (frequency == HIGH_FREQ) {	
 		updated_rate = 6; //0x06
 	} else if (frequency == 512) {	
 		updated_rate = 7; //0x07
@@ -65,7 +64,7 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		updated_rate = 13; //0x0D
 	} else if (frequency == 4) {	
 		updated_rate = 14; //0x0E
-	} else if (frequency == 2) {	
+	} else if (frequency == LOW_FREQ) {	
 		updated_rate = 15; //0x0F
 	} else if (frequency == 0) {
 		updated_rate = 0;
@@ -82,11 +81,17 @@ int rtc_interrupt_rate(uint32_t frequency) {
  * SIDE EFFECT: none
  */
  void rtc_interrupt() {
+
+	cli(); 
 	
 	outb(Register_C, PORT_index); //selecting register C
 	inb(PORT_RW); //clearing the contents
 	test_interrupts();
 	send_eoi(8);
+
+	interrupt = 1; //interrupt occured
+
+	sti();
 	
  }
 
@@ -157,12 +162,12 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	// 	return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	// }
 
-	int flags = 0; //no interrupts has occured
-	while (flags != 1) {
+	interrupt = 0; //no interrupts has occured
+	while (interrupt != 1) {
 		//empty while loop
 	}
 
-	flags = 0; //resetting flag to 0, no interrupt occurs
+	interrupt = 0; //resetting flag to 0, no interrupt occurs
 	return 0;
 
  }
