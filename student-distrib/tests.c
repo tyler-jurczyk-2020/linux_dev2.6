@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "devices/keyboard.h"
+#include "filesystem/fs_tests.h"
 
 #define PASS 1
 #define FAIL 0
@@ -143,6 +144,9 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
-	TEST_OUTPUT("terminal_test", terminal_test());
+	//TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
+    
+    test_file_open();
+    test_file_read();
 }

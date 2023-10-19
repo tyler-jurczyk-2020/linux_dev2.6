@@ -12,6 +12,7 @@
 #include "paging.h"
 #include "devices/rtc.h"
 #include "devices/keyboard.h"
+#include "filesystem/filesystem.h"
 
 //uncomment to run tests
 #define RUN_TESTS 1
@@ -25,6 +26,8 @@
 void entry(unsigned long magic, unsigned long addr) {
 
     multiboot_info_t *mbi;
+
+	module_t *fs_info;
 	
     /* Clear the screen. */
     clear();
@@ -57,6 +60,7 @@ void entry(unsigned long magic, unsigned long addr) {
         int mod_count = 0;
         int i;
         module_t* mod = (module_t*)mbi->mods_addr;
+		fs_info = mod;
         while (mod_count < mbi->mods_count) {
             printf("Module %d loaded at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_start);
             printf("Module %d ends at address: 0x%#x\n", mod_count, (unsigned int)mod->mod_end);
@@ -143,6 +147,9 @@ void entry(unsigned long magic, unsigned long addr) {
 	cli();
 	/* Init the IDT, located in handlers.c*/
 	populate_idt();
+
+	// Setup filesystem
+	init_filesystem(fs_info);
 
 	// Enable paging
 	enable_paging();
