@@ -1,4 +1,4 @@
-#include "types.h"
+#include "../types.h"
 #include "paging.h"
 
 page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));

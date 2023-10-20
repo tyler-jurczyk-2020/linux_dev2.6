@@ -9,7 +9,7 @@
 #include "debug.h"
 #include "tests.h"
 #include "idt_exceptions_syscalls/idt_exceptions_syscalls.h"
-#include "paging.h"
+#include "filesystem/paging.h"
 #include "devices/rtc.h"
 #include "devices/keyboard.h"
 #include "filesystem/filesystem.h"

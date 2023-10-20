@@ -1,7 +1,7 @@
 #ifndef _PAGING
 #define _PAGING
 
-#include "types.h"
+#include "../types.h"
 
 #define FOUR_KB 4096
 #define TABLE_SZ 1024
