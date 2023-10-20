@@ -96,8 +96,10 @@ void keyboard_init(){
 	int i;
 	for(i = 0; i<128; i++){			// size = 128
 		keyboard.buffer[i] = 0;
+		keyboard.out_buffer[i] = 0;
 	}
 	keyboard.top = 0;
+	keyboard.out_top = 0;
 	shift = 0;
 	capslock = 0;
 	alt = 0;
@@ -116,6 +118,7 @@ side effect: print th typed key on screen
 void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
+	int i;
     temp = inb(DATA_PORT);
     if (temp != old_data || holding_count == 0){
 		
@@ -239,8 +242,14 @@ void handle_keyboard(){
 					keyboard.top++;
 				}
 			}
-			
         }
+		if (current_char == '\n'){
+			for (i = 0; i <= keyboard.top; i++){
+				keyboard.out_buffer[i] = keyboard.buffer[i];
+			}
+			keyboard.out_top = keyboard.top;
+			keyboard.top = 0;
+		}
     }
 	else if (temp == old_data && holding_count != 0){
 		holding_count --;
@@ -298,20 +307,20 @@ int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes){
 		return 0;
 	}
 	//wait for enter key
-	while(keyboard.top == 0 || keyboard.buffer[keyboard.top-1] != '\n');
+	while(keyboard.out_top == 0 || keyboard.out_buffer[keyboard.out_top-1] != '\n');
 	//fill in buffer, set to 0 if keyboard does not have that many presses
 	cli();
 	for(i = 0; i<nbytes; i++){
-		if(i<keyboard.top){
-			buffer[i] = keyboard.buffer[i];
+		if(i<keyboard.out_top){
+			buffer[i] = keyboard.out_buffer[i];
 		}else{
 			buffer[i] = 0;
 		}
 	}
-	if(keyboard.top>=i){//bring down the top to how many were left over, and return this amount
-		keyboard.top = keyboard.top-i;
+	if(keyboard.out_top>=i){//bring down the top to how many were left over, and return this amount
+		keyboard.out_top = keyboard.out_top-i;
 	}else{
-		keyboard.top = 0;
+		keyboard.out_top = 0;
 	}
 	sti();
 	return i;
