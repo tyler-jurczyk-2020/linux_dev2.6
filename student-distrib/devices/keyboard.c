@@ -244,7 +244,7 @@ void handle_keyboard(){
 			}
         }
 		if (current_char == '\n'){
-			for (i = 0; i <= keyboard.top; i++){
+			for (i = 0; i < keyboard.top; i++){
 				keyboard.out_buffer[i] = keyboard.buffer[i];
 			}
 			keyboard.out_top = keyboard.top;
