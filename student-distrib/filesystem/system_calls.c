@@ -89,17 +89,31 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
  * Return Value: Number of unread bytes
  * Function: Reads the names of the files in the current directory */
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
-    unsigned int i;
+    uint32_t bytes_to_copy = nbytes;
+    uint32_t i;
     // Read all the dir_entries since filesystem is flat
     for(i=0; i<fs.boot->dir_count; i++) {
+        if (bytes_to_copy == 0) {
+            break; 
+        }
         dentry_t dentry; 
         int res = read_dentry_by_index(i, &dentry); 
         if (res != 0) {
             return res;
         }
         // Copy the name into the buffer
-        memcpy(buf, dentry.filename, FILENAME_LEN);        
-        buf += FILENAME_LEN;
+        // We include newline characters into the count of bytes_to_copy
+        uint32_t len_to_copy;
+        if (dentry.filename[FILENAME_LEN-1] != '\0') {
+            len_to_copy = (bytes_to_copy > FILENAME_LEN) ? FILENAME_LEN : bytes_to_copy-1;     
+        }
+        else {
+            len_to_copy = (bytes_to_copy > strlen(dentry.filename)) ? strlen(dentry.filename) : bytes_to_copy-1;
+        }
+        strncpy(buf, dentry.filename, len_to_copy);
+        ((int8_t *)buf)[len_to_copy] = '\n';
+        buf += len_to_copy+1;
+        bytes_to_copy -= len_to_copy+1;
     }
-    return 0; 
+    return bytes_to_copy; 
 }

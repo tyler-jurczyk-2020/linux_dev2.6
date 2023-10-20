@@ -12,7 +12,7 @@ void clear_buffer() {
 void test_large_file_single() {
     clear_buffer();
     file_open((uint8_t *)"verylargetextwithverylongname.txt");
-    clear();
+    clear_screen();
     file_read(-1 , buffer, 2*BYTES_PER_BLOCK);
     puts(buffer);
 }
@@ -23,17 +23,17 @@ void test_large_file_multi() {
     file_open((uint8_t *)"verylargetextwithverylongname.txt");
     uint32_t i;
     for(i=0; i<3; i++) {
-        clear();
-        file_read(-1 , buffer+(200*i), 200);
-        puts(buffer);
+        clear_screen();
+        file_read(-1 , buffer+(6*i), 6);
     }
+    puts(buffer);
 }
 
 // Try reading the entirety of a small file
 void test_small_file() {
     clear_buffer();
     file_open((uint8_t *)"frame1.txt");
-    clear();
+    clear_screen();
     file_read(-1 , buffer, BYTES_PER_BLOCK);
     puts(buffer);
 }
@@ -43,10 +43,9 @@ void test_dir_read_single() {
     clear_buffer();
     dir_open((uint8_t *)".");
     dir_read(-1 , buffer, 2*BYTES_PER_BLOCK);
-    clear();
+    clear_screen();
     uint32_t i;
-    for (i=0; i<BYTES_PER_BLOCK/2; i++) {
-
+    for (i=0; i<144; i++) {
         putc(buffer[i]);    
     }
 }
@@ -55,12 +54,12 @@ void test_dir_read_single() {
 void test_dir_read_multi() {
     clear_buffer();
     dir_open((uint8_t *)".");
-    clear();
+    clear_screen();
     uint32_t i;
     for(i=0; i<3; i++) {
-        dir_read(-1 , buffer+(200*i), 200);
+        dir_read(-1 , buffer+(6*i), 6);
     }
-    for (i=0; i<BYTES_PER_BLOCK/2; i++) {
+    for (i=0; i<18; i++) {
         putc(buffer[i]);    
     }
 }
