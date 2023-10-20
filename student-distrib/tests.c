@@ -2,6 +2,7 @@
 #include "x86_desc.h"
 #include "lib.h"
 #include "devices/keyboard.h"
+#include "devices/rtc.h"
 #include "filesystem/fs_tests.h"
 
 #define PASS 1
