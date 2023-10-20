@@ -113,7 +113,7 @@ void keyboard_init(){
 description: this is the handler for keyboard
 input: none
 output: none
-side effect: print th typed key on screen
+side effect: print th typed key on screen, maintain buffer and out_buffer
 */
 void handle_keyboard(){
     uint8_t temp;
@@ -188,9 +188,7 @@ void handle_keyboard(){
         if (temp < 59){
 			if (ctrl == 1){		
 				if (temp == 0x26){				// scan code for l
-					clear();
-					screen_set_xy(0,0);
-					update_cursor_pos(0,0);
+					clear_screen();
 				}		
 				current_char = 0x00;			// do not print it
 			}
@@ -243,7 +241,7 @@ void handle_keyboard(){
 				}
 			}
         }
-		if (current_char == '\n'){
+		if (current_char == '\n'){								// copy to out_buffer when \n pressed; also clear buffer
 			for (i = 0; i < keyboard.top; i++){
 				keyboard.out_buffer[i] = keyboard.buffer[i];
 			}
@@ -251,9 +249,8 @@ void handle_keyboard(){
 			keyboard.top = 0;
 		}
     }
-	else if (temp == old_data && holding_count != 0){
+	else if (temp == old_data && holding_count != 0){			// check for holding
 		holding_count --;
-		//printf(" get here ");
 	}
     old_data = temp;
     send_eoi(1);
@@ -276,9 +273,7 @@ side effects: Video memory is cleared
 int terminal_open(const uint8_t* filename){
 	disable_cursor();
 	enable_cursor();
-	update_cursor_pos(0,0);
-	clear();
-	screen_set_xy(0,0);
+	clear_screen();
 	return 0;
 }
 /*
