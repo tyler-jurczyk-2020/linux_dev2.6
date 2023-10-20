@@ -24,6 +24,11 @@ void clear(void) {
     }
 }
 
+void clear_screen(void){
+    clear();
+    screen_set_xy(0,0);
+	update_cursor_pos(0,0);
+}
 /* void screen_set_xy(x,y)
 inputs : x and y coordinates to set screen coords to
 outputs : none

@@ -18,7 +18,7 @@ uint32_t strlen(const int8_t* s);
 
 void screen_set_xy(int x, int y);
 void clear(void);
-
+void clear_screen(void);
 void enable_cursor();
 void disable_cursor();
 void update_cursor();
