@@ -96,6 +96,7 @@ int test_keyboard(){
 	return FAIL;
 }
 /* Checkpoint 2 tests */
+
 int terminal_test(){
 	TEST_HEADER;
 	uint8_t name[1];
@@ -109,6 +110,32 @@ int terminal_test(){
 	}
 	return PASS;
 }
+
+int rtc_test(){
+	TEST_HEADER;
+	uint8_t name[1];
+	name[0] = 'A';
+	uint8_t buf[128];
+	int req;
+	int i;
+	terminal_open(name);
+	rtc_open(0);
+	buf[0] = 0;
+	while(1){
+		for (req = 2; req <= 1024; req*=2){
+			printf("frequence: %d  ", req);
+			rtc_write(0, buf, req);
+			for (i = 0; i < 2*req; i++){
+				rtc_read(0, buf, req); 
+			}
+			printf("\n");
+		}
+		clear();
+		screen_set_xy(0,0);
+		update_cursor_pos(0,0);
+	}
+	return PASS; 
+}
 /* Checkpoint 3 tests */
 int syscall_jump(){
 	TEST_HEADER;
@@ -121,6 +148,7 @@ int syscall_jump(){
 }
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
+
 
 
 /* Test suite entry point */

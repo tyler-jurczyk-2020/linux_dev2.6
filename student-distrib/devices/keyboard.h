@@ -10,6 +10,14 @@
 
 #define ESC                 0xFF
 
+#define DOUBLE_CODE         0xE0
+
+#define RIGHT_ALT_P         0x38
+#define RIGHT_CTRL_P        0x1D
+
+#define RIGHT_ALT_R         0xB8
+#define RIGHT_CTRL_R        0x9D
+
 #define LEFT_SHIFT_R        0xAA
 #define RIGHT_SHIFT_R       0xB6
 #define LEFT_ALT_R          0XB8
@@ -23,6 +31,7 @@
 
 #define QUOTE               39
 #define BACK_SLASH          92
+#define HOLDING_INIT        3
 
 
 /* keyboard struct, feel free to add flags/anything else necessary.*/
@@ -46,9 +55,13 @@ Read will read from the keyboard buffer into an inputted buffer
 Write will write an inputted buffer onto the screen
 */
 
+/*open terminal*/
 extern int terminal_open(const uint8_t* filename);
+/*do nothing*/
 extern int terminal_close(int32_t fd);
+/*read from keyboard buffer*/
 extern int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes);
+/*puts what is read on to terminal*/
 extern int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes);
 
 #endif

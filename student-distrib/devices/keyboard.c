@@ -5,7 +5,7 @@
 #include "../x86_desc.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
-static char scan_code_set_1_norm[59] = {
+static char scan_code_set_1_norm[59] = {	// 59 characters for what we care
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
@@ -16,7 +16,7 @@ static char scan_code_set_1_norm[59] = {
     '\n', 0x00,  'a',  's',
     'd',  'f',  'g',  'h',
     'j',  'k',  'l',  ';',
-    0x00, '`', 0x00, BACK_SLASH,
+    QUOTE, '`', 0x00, BACK_SLASH,
     'z',  'x',  'c',  'v',
     'b',  'n',  'm',  ',',
 	'.',  '/', 0x00, 0x00,
@@ -85,6 +85,7 @@ static int shift;
 static int capslock;
 static int alt;
 static int ctrl;
+static int holding_count;
 
 /*
 Init keyboard
@@ -93,7 +94,7 @@ no output
 */
 void keyboard_init(){
 	int i;
-	for(i = 0; i<128; i++){
+	for(i = 0; i<128; i++){			// size = 128
 		keyboard.buffer[i] = 0;
 	}
 	keyboard.top = 0;
@@ -101,6 +102,7 @@ void keyboard_init(){
 	capslock = 0;
 	alt = 0;
 	ctrl = 0;
+	holding_count = HOLDING_INIT;
     enable_irq(IRQ1); 
 }                  
 
@@ -115,42 +117,69 @@ void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
-    if (temp != old_data){
+    if (temp != old_data || holding_count == 0){
 		
-		switch (temp)			// check function keys
-		{
-		case LEFT_SHIFT_R:		
-			shift = 0;
-			break;
-		case RIGHT_SHIFT_R:		
-			shift = 0;
-			break;
-		case LEFT_ALT_R:		
-			alt = 0;
-			break;
-		case LEFT_CTRL_R:		
-			ctrl = 0;
-			break;
+		if (temp != old_data){				// function key should only be triggered once
+			
+			holding_count = HOLDING_INIT;		
 
-		case LEFT_SHIFT_P:		
-			shift = 1;
-			break;
-		case RIGHT_SHIFT_P:		
-			shift = 1;
-			break;
-		case LEFT_ALT_P:		
-			alt = 1;
-			break;
-		case LEFT_CTRL_P:		
-			ctrl = 1;
-			break;
+			if (old_data == DOUBLE_CODE){	// check for special double scan code
+				switch (temp)
+				{
+				case RIGHT_ALT_R:
+					alt = 0;
+					break;
+				case RIGHT_CTRL_R:
+					ctrl = 0;
+					break;
 
-		case CAPSLOCK_P:		
-			capslock ^= 1;
-			break;
+				case RIGHT_ALT_P:
+					alt = 1;
+					break;
+				case RIGHT_CTRL_P:
+					ctrl = 1;
+					break;
+				default:
+					break;
+				}
+			}
+			else{
+				switch (temp)			// check normal function keys
+				{
+				case LEFT_SHIFT_R:		
+					shift = 0;
+					break;
+				case RIGHT_SHIFT_R:		
+					shift = 0;
+					break;
+				case LEFT_ALT_R:		
+					alt = 0;
+					break;
+				case LEFT_CTRL_R:		
+					ctrl = 0;
+					break;
 
-		default:
-			break;
+				case LEFT_SHIFT_P:		
+					shift = 1;
+					break;
+				case RIGHT_SHIFT_P:		
+					shift = 1;
+					break;
+				case LEFT_ALT_P:		
+					alt = 1;
+					break;
+				case LEFT_CTRL_P:		
+					ctrl = 1;
+					break;
+
+				case CAPSLOCK_P:		
+					capslock ^= 1;
+					break;
+
+				default:
+					break;
+				}
+			}
 		}
 
         if (temp < 59){
@@ -184,26 +213,39 @@ void handle_keyboard(){
 			if (current_char == ESC){
 				// Do something
 			}
-            else if(current_char == '\b' && keyboard.top > 0){//Check for backspace
+            else if(current_char == '\b' && keyboard.top > 0){			//Check for backspace
 				delc();
 				keyboard.top--;
 			}
-			else if (current_char == '\t' && keyboard.top < 124){
+			else if (current_char == '\t' && keyboard.top < 124){		// 123 + 4 = 127 , should not write after this position, leave a space for '\n'
 				puts("    ");
 				keyboard.buffer[keyboard.top] = ' ';
 				keyboard.buffer[keyboard.top + 1] = ' ';
 				keyboard.buffer[keyboard.top + 2] = ' ';
 				keyboard.buffer[keyboard.top + 3] = ' ';
-				keyboard.top += 4;
+				keyboard.top += 4;										// 4 space for tab
 			}
-			else if(current_char != '\b' && keyboard.top < 128){//dont add to buffer if it's full
-				putc(current_char);
-				keyboard.buffer[keyboard.top] = current_char;		
-				keyboard.top++;
+			else if(current_char != '\b' && keyboard.top < 128 && current_char != '\t'){//dont add to buffer if it's full
+				if (keyboard.top == 127){								// check when reaches top
+					if (current_char == '\n'){
+						putc(current_char);
+						keyboard.buffer[keyboard.top] = current_char;		
+						keyboard.top++;
+					}
+				}
+				else{
+					putc(current_char);
+					keyboard.buffer[keyboard.top] = current_char;		
+					keyboard.top++;
+				}
 			}
 			
         }
     }
+	else if (temp == old_data && holding_count != 0){
+		holding_count --;
+		//printf(" get here ");
+	}
     old_data = temp;
     send_eoi(1);
 }
