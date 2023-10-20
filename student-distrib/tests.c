@@ -146,7 +146,20 @@ void launch_tests(){
 
 	//TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
-    
-    test_dir_open();
-    test_dir_read();
-}
+
+    // Following test causes terminal bug
+    /*
+    clear(); 
+    putc('\0');
+    putc('\0');
+    putc('\0');
+    putc('\0');
+    putc('\0');
+    putc('\0');
+    */
+    test_large_file_single();
+    test_large_file_multi();
+    test_small_file();
+    test_dir_read_single();
+    test_dir_read_multi();
+    }

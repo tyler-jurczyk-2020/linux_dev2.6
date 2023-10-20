@@ -1,12 +1,14 @@
 #ifndef _FS_TESTS
 #define _FS_TESTS
 
-void test_file_open();
+void test_large_file_single();
 
-void test_file_read();
+void test_large_file_multi();
 
-void test_dir_open();
+void test_small_file();
 
-void test_dir_read();
+void test_dir_read_single();
+
+void test_dir_read_multi();
 
 #endif
