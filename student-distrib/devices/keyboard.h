@@ -37,6 +37,8 @@
 /* keyboard struct, feel free to add flags/anything else necessary.*/
 typedef struct keyboard_struct  {
     uint8_t buffer[128]; //holds chars that have been typed
+    uint8_t out_buffer[128];
+    uint8_t out_top;
 	uint8_t top; //holds index of top element
 }keyboard_struct;
 
