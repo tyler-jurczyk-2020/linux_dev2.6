@@ -20,3 +20,34 @@ Bug: Screen would clear but then the system would hang before kernel.c was able 
 Solution: Call to enable_paging() needed to happen at the end of kernel.c instead of happening much earlier during the boot process, such as in boot.S
 
 CHECKPOINT2:
+Keyboard:
+P: Any function key crashed the kernel.
+S: Do not return from the switch, just break. No need to save these executions.
+P: Function keys do not work as they should be.
+S: Comparison out of range, change current_char type to uint8_t (reorganized the file, can not see it now)
+P:  TAB key causes funny extra characters when the enter key is pressed.
+S: I forgot to change keyboard.top accordingly. Now it should be good.
+P: keyboard ‘delete’ after ‘enter’ does not delete the correct number of characters if the terminal read is not called.
+S: Use a flag to lock the buffer if terminal read is not being run.
+
+Terminal Driver:
+P: Keyboard backspace wasn’t moving the cursor backwards
+S: PUTC automatically increments screen.x and screen.y, so in deletec function must decrement x/y once before putc(‘ ‘) and once afterwards
+P: Terminal read never waited
+S: never checked that the keyboard buffer top wasn’t 0, so terminal_read always thought it was ready
+
+RTC:
+P: RTC wasn’t able to set frequency to 256 or higher
+S: unsigned 8 isn’t large enough to hold all the inputs for RTC frequency, unsigned 8 is just the size of buffer element, changed it to use uint32_t
+
+File Directory:
+P: Multiple calls to dir_read would lead to inconsistent reads of the contents of the file directory, such as starting at the incorrect location
+S: Needed to account for the newlines that were being added to the buffer to format the names of the files/dirs in the current directory
+P: Multiple calls to file_read would not properly read across data blocks
+S: Needed to correctly index into the correct data block depending on the offset that was provided as an argument, as consecutive reads should start at data blocks further down.
+P: Indexing into a specific spot in the datablock very far off
+S: Needed to access the bytes member of the datablock struct to correctly access the starting byte of the read.
+
+CHECKPOINT 3:
+CHECKPOINT 4:
+CHECKPOINT 5:
