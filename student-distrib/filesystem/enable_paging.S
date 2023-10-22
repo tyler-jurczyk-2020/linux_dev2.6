@@ -40,3 +40,10 @@ mod_cr3:
     movl %eax, %cr3
     leave
     ret
+
+get_cr3:
+    pushl %ebp
+    movl %esp, %ebp
+    movl %cr3, %eax
+    leave
+    ret

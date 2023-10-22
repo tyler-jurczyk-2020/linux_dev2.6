@@ -9,6 +9,7 @@
 #define VIDEO_PAGE_FLAGS 0x000B8003
 #define KERNEL_PAGE_FLAGS 0x00400183
 #define EMPTY_PAGE 0x02
+#define PROGRAM_IDX 32
 
 typedef struct {
     union {
@@ -88,5 +89,7 @@ void setup_pager_table();
 void enable_paging();
 
 void mod_cr3(uint32_t *);
+
+page_directory_entry_t *get_cr3();
 
 #endif
