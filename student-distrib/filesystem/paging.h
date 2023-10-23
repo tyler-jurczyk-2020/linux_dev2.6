@@ -92,4 +92,6 @@ void mod_cr3(uint32_t *);
 
 page_directory_entry_t *get_cr3();
 
+void set_pager_dir_entry(uint32_t page_addr);
+
 #endif

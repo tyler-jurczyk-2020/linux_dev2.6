@@ -2,6 +2,8 @@
 #include "idt_entries.h"
 #include "../x86_desc.h"
 #include "../lib.h"
+#include "../filesystem/paging.h"
+#include "../filesystem/filesystem.h"
 
 /*
 Struct to map vector#'s to their english error meaning
@@ -104,6 +106,9 @@ uint32_t halt(uint8_t status){
 }
 uint32_t execute(const uint8_t* command){
 	putc('2');
+    set_pager_dir_entry(EIGHT_MB);
+    uint32_t eip;
+    open_executable(command, &eip); 
 	return 0;
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){

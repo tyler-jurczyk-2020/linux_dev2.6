@@ -1,6 +1,7 @@
 .text
 .globl enable_paging
 .globl mod_cr3
+.globl get_cr3
 
  /* void enable_paging();
  * Inputs: none 

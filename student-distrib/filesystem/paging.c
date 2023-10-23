@@ -59,5 +59,5 @@ void set_pager_dir_entry(uint32_t page_addr) {
     entry->avail = 0;
     entry->tbl_attr_idx = 0;
     entry->reserved = 0;
-    entry->base_addr = page_addr >> 12;
+    entry->base_addr = page_addr >> 22;
 }

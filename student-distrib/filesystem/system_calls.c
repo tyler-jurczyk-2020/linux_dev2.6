@@ -1,6 +1,7 @@
 #include "../lib.h"
 #include "../types.h"
 #include "filesystem.h"
+#include "paging.h"
 
 
 /* void file_open();
@@ -116,4 +117,20 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
         bytes_to_copy -= len_to_copy+1;
     }
     return bytes_to_copy; 
+}
+
+int32_t open_executable(const uint8_t *command, uint32_t *eip) {
+    dentry_t dentry;
+    int res = read_dentry_by_name(command, &dentry);
+    if (res != 0) {
+        return res; 
+    }
+    uint32_t magic_numbers;
+    read_data(dentry.inode_num, 0, (uint8_t *)(&magic_numbers), 4); 
+    if (magic_numbers != MAGIC) {
+        return -1;
+    }
+    read_data(dentry.inode_num, 24, (uint8_t *)eip, 4); 
+    read_data(dentry.inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
+    return 0;
 }

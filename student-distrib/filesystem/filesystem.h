@@ -6,6 +6,10 @@
 
 #define FILENAME_LEN 32 
 #define BYTES_PER_BLOCK 4096
+#define EIGHT_MB 0x00800000
+#define FOUR_MB 0x00400000
+#define PROGRAM_START 0x08048000
+#define MAGIC 0x464c457f
 
 typedef struct {
     int8_t filename[FILENAME_LEN];
@@ -60,6 +64,8 @@ int32_t dir_open(const uint8_t *filename);
 int32_t dir_close(int32_t fd);
 int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
+
+int32_t open_executable(const uint8_t *command, uint32_t *eip);
 
 extern process_control_t pcb;
 extern filesystem_t fs;
