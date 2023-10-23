@@ -63,3 +63,19 @@ void test_dir_read_multi() {
         putc(buffer[i]);    
     }
 }
+
+void test_read_exec() {
+    clear_buffer();
+    file_open("shell");
+    clear_screen();
+	uint32_t i;
+    file_read(-1 , buffer, 50);
+	for(i = 0; i<50; i++){
+		putc(buffer[i]);
+	}
+	file_read(-1,buffer,5608);
+    for(i=5500; i<5608; i++) {
+        putc(buffer[i]);
+    }
+	
+}

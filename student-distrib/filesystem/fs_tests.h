@@ -11,4 +11,5 @@ void test_dir_read_single();
 
 void test_dir_read_multi();
 
+void test_read_exec();
 #endif

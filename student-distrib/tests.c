@@ -173,13 +173,14 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
-	//TEST_OUTPUT("terminal_test", terminal_test());
+	TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
-    TEST_OUTPUT("RTC_test", rtc_test())
+    //TEST_OUTPUT("RTC_test", rtc_test())
     // Test the filesystem
     // test_large_file_single();
     // test_large_file_multi();
     // test_small_file();
     // test_dir_read_single();
     // test_dir_read_multi();
+	//test_read_exec();
     }
