@@ -116,7 +116,6 @@ side effect: print th typed key on screen, maintain buffer and out_buffer
 void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
-	int i;
     temp = inb(DATA_PORT);
     if ((temp != old_data || holding_count == 0) && keyboard.enter_lock == 0){
 		
@@ -360,5 +359,5 @@ int dummy_write(){
 	return -1;
 }
 int dummy_read(){
-	return -1
+	return -1;
 }
