@@ -341,3 +341,24 @@ int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes){
 	}
 	return 0;
 }
+
+
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+BELOW ARE DUMMY FUNCTIONS FOR STDIN/STDOUT
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+int dummy_open(){
+	return -1;
+}
+int dummy_close(){
+	return -1;
+}
+int dummy_write(){
+	return -1;
+}
+int dummy_read(){
+	return -1
+}

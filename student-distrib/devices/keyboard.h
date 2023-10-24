@@ -65,4 +65,12 @@ extern int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes);
 /*puts what is read on to terminal*/
 extern int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes);
 
+extern int dummy_read();
+
+extern int dummy_open();
+
+extern int dummy_write();
+
+extern int dummy_close();
+
 #endif
