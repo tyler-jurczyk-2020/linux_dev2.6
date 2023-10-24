@@ -4,6 +4,7 @@
 #include "../lib.h"
 #include "../filesystem/paging.h"
 #include "../filesystem/filesystem.h"
+#include "pcb.h"
 
 /*
 Struct to map vector#'s to their english error meaning
@@ -100,15 +101,25 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
 **************************************************
 */
+
+
 uint32_t halt(uint8_t status){
 	putc('1');
 	return 0;
 }
 uint32_t execute(const uint8_t* command){
 	putc('2');
+    // Setup paging for executable
     set_pager_dir_entry(EIGHT_MB);
+    // Copy executable to memory
     uint32_t eip;
     open_executable(command, &eip); 
+    // Setup child pcb
+    uint8_t avail_process = get_process_id();
+    pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
+    pcb_t *parent = get_parent_pcb(avail_process);
+    setup_pcb(pcb_self, avail_process, parent); 
+    //
 	return 0;
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
