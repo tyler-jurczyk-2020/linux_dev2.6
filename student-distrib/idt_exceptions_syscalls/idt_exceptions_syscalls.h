@@ -28,6 +28,8 @@ void system_call_handler(unsigned long vector, unsigned long flags, register_str
 //function to fill up the IDT
 void populate_idt();
 
+void setup_exec_stack(uint32_t);
+
 /*
 **********************************
 Below are syscall function headers
