@@ -6,16 +6,23 @@
 #define MAX_FILES 8
 #define EIGHT_KB 0x00002000
 
+typedef struct {
+    int32_t(*open)(const uint8_t *filename);
+    int32_t(*close)(int32_t fd);
+    int32_t(*read)(int32_t fd, void *buf, int32_t nbytes);
+    int32_t(*write)(int32_t fd, const void *buf, int32_t nbytes);
+} file_ops_table_t;
+
 extern uint8_t process_ids[MAX_PROCESSES];
 
-extern int32_t *stdin_table;
-extern int32_t *stdout_table;
-extern int32_t *file_table; 
-extern int32_t *directory_table; 
-extern int32_t *rtc_table; 
+extern file_ops_table_t stdin_table;
+extern file_ops_table_t stdout_table;
+extern file_ops_table_t file_table; 
+extern file_ops_table_t directory_table; 
+extern file_ops_table_t rtc_table; 
 
 typedef struct file_descriptor_t {
-    int32_t *file_ops;
+    file_ops_table_t *file_ops;
     int32_t inode;
     int32_t file_pos;
     int32_t flags;

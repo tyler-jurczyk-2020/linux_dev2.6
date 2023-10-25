@@ -116,10 +116,10 @@ uint32_t execute(const uint8_t* command){
     open_executable(command, &eip); 
     // Setup child pcb
     uint8_t avail_process = get_process_id();
-    pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
+    pcb_t *pcb_self = (pcb_t *)((pcb_t *)EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
-    setup_pcb(pcb_self, avail_process, parent); 
-    //
+    setup_pcb(pcb_self, avail_process, parent);
+    pcb_self->fd[0].file_ops->close(0);
 	return 0;
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
