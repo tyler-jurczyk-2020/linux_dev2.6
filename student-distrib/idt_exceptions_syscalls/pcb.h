@@ -32,6 +32,7 @@ typedef struct pcb_t {
     uint32_t process_id;
     struct pcb_t *parent;
     uint32_t esp0;
+    uint32_t available[8];
     file_descriptor_t fd[8]; 
 } pcb_t;
 

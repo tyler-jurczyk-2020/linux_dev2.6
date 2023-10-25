@@ -31,6 +31,12 @@ void setup_pcb(pcb_t *pcb, uint32_t my_process_id, pcb_t *parent_pcb) {
         .file_pos = 0,
         .flags = 0
     };
+    uint32_t i;
+    for (i=0; i<8; i++) {
+        pcb->available[i] = 1; 
+    }
+    pcb->available[0] = 0;
+    pcb->available[1] = 0;
 }
 
 pcb_t *get_parent_pcb(uint8_t current_process) {

@@ -108,7 +108,6 @@ uint32_t halt(uint8_t status){
 	return 0;
 }
 uint32_t execute(const uint8_t* command){
-	putc('2');
     // Setup paging for executable
     set_pager_dir_entry(EIGHT_MB);
     // Copy executable to memory
@@ -127,11 +126,13 @@ uint32_t execute(const uint8_t* command){
 	return 0;
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
-	putc('3');
+    pcb_t *cur_pcb = get_pcb();
+    cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes); 
 	return 0;
 }
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
-	putc('4');
+    pcb_t *cur_pcb = get_pcb();
+    cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
 	return 0;
 }
 uint32_t open(const uint8_t* filename){

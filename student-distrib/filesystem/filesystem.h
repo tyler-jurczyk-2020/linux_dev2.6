@@ -62,8 +62,6 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
 
 int32_t open_executable(const uint8_t *command, uint32_t *eip);
 
-typedef file_descriptor_t process_control_t;
-extern process_control_t pcb;
 extern filesystem_t fs;
 
 #endif

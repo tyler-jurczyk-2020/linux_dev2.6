@@ -4,6 +4,26 @@
 #include "paging.h"
 
 
+file_descriptor_t *get_fd(int32_t fd) {
+    if (fd < 0 || fd > 7) {
+        return NULL; 
+    }
+    pcb_t *pcb = get_pcb();
+    return &pcb->fd[fd];
+}
+
+int32_t get_avail_fd() {
+    pcb_t *pcb = get_pcb();
+    uint32_t i;
+    for (i=0; i<8; i++) {
+        if (pcb->available[i]) {
+            pcb->available[i] = 0;
+            return i; 
+        } 
+    }
+    return -1;
+}
+
 /* void file_open();
  * Inputs: const uint8_t *filename of the file to open 
  * Return Value: return non-zero if we cannot find the file, else 0 for success
@@ -14,12 +34,18 @@ int32_t file_open(const uint8_t *filename) {
     if (res != 0) {
         return res; 
     }
+
     // Setup pcb entry
-    pcb.file_ops = NULL; // Note this should not be here, as file_open would be one of the file_ops 
-    pcb.inode = dentry.inode_num;
-    pcb.file_pos = 0;
-    pcb.flags = 0; // Need to add flags
-    return 0;
+    int32_t fd_idx = get_avail_fd();
+    file_descriptor_t *file_desc = get_fd(fd_idx);
+    if (file_desc == NULL) {
+        return -1; 
+    }
+    file_desc->file_ops = &file_table; // Note this should not be here, as file_open would be one of the file_ops 
+    file_desc->inode = dentry.inode_num;
+    file_desc->file_pos = 0;
+    file_desc->flags = 0; // Need to add flags
+    return fd_idx;
 }
 
 /* void file_close();
@@ -45,8 +71,9 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
  * Function: Reads data of the associated file descriptor */
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
     // Read file and save position we read to
-    int unread_bytes = read_data(pcb.inode, pcb.file_pos, buf, nbytes); 
-    pcb.file_pos += nbytes - unread_bytes;
+    file_descriptor_t *file_desc = get_fd(fd);
+    int unread_bytes = read_data(file_desc->inode, file_desc->file_pos, buf, nbytes); 
+    file_desc->file_pos += nbytes - unread_bytes;
     return unread_bytes;
 }
 
@@ -62,10 +89,15 @@ int32_t dir_open(const uint8_t *filename) {
         return res; 
     }
     // Setup pcb entry
-    pcb.file_ops = NULL; // Note this should not be here, as file_open would be one of the file_ops 
-    pcb.inode = -1; // Indicates its a directory
-    pcb.file_pos = 0;
-    pcb.flags = 0; // Need to add flags
+    int32_t fd_idx = get_avail_fd();
+    file_descriptor_t *file_desc = get_fd(fd_idx);
+    if (file_desc == NULL) {
+        return -1; 
+    }
+    file_desc->file_ops = &directory_table; // Note this should not be here, as file_open would be one of the file_ops 
+    file_desc->inode = -1; // Indicates its a directory
+    file_desc->file_pos = 0;
+    file_desc->flags = 0; // Need to add flags
     return 0;
 }
 

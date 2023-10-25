@@ -4,7 +4,6 @@
 #include "../lib.h"
 
 filesystem_t fs;
-process_control_t pcb;
 
 /* void init_filesystem();
  * Inputs: pointer to the filesystem module
