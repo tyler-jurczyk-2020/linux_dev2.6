@@ -14,18 +14,7 @@ int32_t file_open(const uint8_t *filename) {
     if (res != 0) {
         return res; 
     }
-
-    // Setup pcb entry
-    int32_t fd_idx = get_avail_fd();
-    file_descriptor_t *file_desc = get_fd(fd_idx);
-    if (file_desc == NULL) {
-        return -1; 
-    }
-    file_desc->file_ops = &file_table; // Note this should not be here, as file_open would be one of the file_ops 
-    file_desc->inode = dentry.inode_num;
-    file_desc->file_pos = 0;
-    file_desc->flags = 0; // Need to add flags
-    return fd_idx;
+    return dentry.inode_num;
 }
 
 /* void file_close();
@@ -68,16 +57,6 @@ int32_t dir_open(const uint8_t *filename) {
     if (res != 0) {
         return res; 
     }
-    // Setup pcb entry
-    int32_t fd_idx = get_avail_fd();
-    file_descriptor_t *file_desc = get_fd(fd_idx);
-    if (file_desc == NULL) {
-        return -1; 
-    }
-    file_desc->file_ops = &directory_table; // Note this should not be here, as file_open would be one of the file_ops 
-    file_desc->inode = -1; // Indicates its a directory
-    file_desc->file_pos = 0;
-    file_desc->flags = 0; // Need to add flags
     return 0;
 }
 

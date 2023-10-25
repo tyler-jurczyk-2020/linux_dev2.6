@@ -5,6 +5,7 @@
 #include "../filesystem/paging.h"
 #include "../filesystem/filesystem.h"
 #include "pcb.h"
+#include "../devices/rtc.h"
 
 /*
 Struct to map vector#'s to their english error meaning
@@ -127,21 +128,55 @@ uint32_t execute(const uint8_t* command){
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
-    cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes); 
-	return 0;
+    return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
 }
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
-    cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
-	return 0;
+    return cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
 }
 uint32_t open(const uint8_t* filename){
-	putc('5');
+    // Setup pcb entry
+    int32_t fd_idx = get_avail_fd();
+    file_descriptor_t *file_desc = get_fd(fd_idx);
+    if (file_desc == NULL) {
+        return -1; 
+    }
 	return 0;
+    int32_t open_res;
+    if (!strncmp((const int8_t *)filename, (const int8_t *)"rtc", 3)) {
+        open_res = rtc_open((const uint8_t *)"rtc"); 
+        if (open_res != 0) {
+            return -1;
+        }
+        file_desc->file_ops = &rtc_table;
+        file_desc->inode = -1;
+    }
+    else if (!strncmp((const int8_t *)filename, (const int8_t *)".", 1)) {
+        open_res = dir_open((const uint8_t *)"."); 
+        if (open_res != 0) {
+            return -1;
+        }
+        file_desc->file_ops = &directory_table;
+        file_desc->inode = -1;
+    }
+    else {
+        file_open(filename);
+        if (open_res < 0) {
+            return -1;
+        }
+        file_desc->file_ops = &file_table;
+        file_desc->inode = open_res;
+    }
+    file_desc->file_pos = 0;
+    file_desc->flags = 0;
 }
 uint32_t close(uint32_t fd){
-	putc('6');
-	return 0;
+    if (fd < 2 || fd > 7) {
+        return -1; 
+    }
+    pcb_t *cur_pcb = get_pcb();
+    cur_pcb->available[fd] = 1;
+	return cur_pcb->fd[fd].file_ops->close(fd);
 }
 uint32_t getargs(uint8_t* buf, uint32_t nbytes){
 	putc('7');
