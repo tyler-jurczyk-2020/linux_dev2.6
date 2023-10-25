@@ -45,3 +45,25 @@ pcb_t *get_parent_pcb(uint8_t current_process) {
     }
     return get_pcb();
 }
+
+file_descriptor_t *get_fd(int32_t fd) {
+    if (fd < 0 || fd > 7) {
+        return NULL; 
+    }
+    pcb_t *pcb = get_pcb();
+    return &pcb->fd[fd];
+}
+
+int32_t get_avail_fd() {
+    pcb_t *pcb = get_pcb();
+    uint32_t i;
+    for (i=0; i<8; i++) {
+        if (pcb->available[i]) {
+            pcb->available[i] = 0;
+            return i; 
+        } 
+    }
+    return -1;
+}
+
+

@@ -4,26 +4,6 @@
 #include "paging.h"
 
 
-file_descriptor_t *get_fd(int32_t fd) {
-    if (fd < 0 || fd > 7) {
-        return NULL; 
-    }
-    pcb_t *pcb = get_pcb();
-    return &pcb->fd[fd];
-}
-
-int32_t get_avail_fd() {
-    pcb_t *pcb = get_pcb();
-    uint32_t i;
-    for (i=0; i<8; i++) {
-        if (pcb->available[i]) {
-            pcb->available[i] = 0;
-            return i; 
-        } 
-    }
-    return -1;
-}
-
 /* void file_open();
  * Inputs: const uint8_t *filename of the file to open 
  * Return Value: return non-zero if we cannot find the file, else 0 for success

@@ -44,4 +44,8 @@ pcb_t *get_parent_pcb(uint8_t current_process);
 
 extern pcb_t *get_pcb();
 
+file_descriptor_t *get_fd(int32_t fd);
+
+int32_t get_avail_fd();
+
 #endif
