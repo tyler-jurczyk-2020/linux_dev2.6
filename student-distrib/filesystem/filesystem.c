@@ -42,7 +42,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     unsigned int i;
     // Iterate over all dir_entries and find the name through string comparison
     for(i=0; i<fs.boot->dir_count; i++) {
-        uint32_t check_len = (strlen((int8_t *)fname) > FILENAME_LEN) ? FILENAME_LEN : strlen((int8_t *)fname);
+        uint32_t check_len = (strlen((int8_t *)fs.boot->dir_entries[i].filename) > FILENAME_LEN) ? FILENAME_LEN : strlen((int8_t *)fs.boot->dir_entries[i].filename);
         int cmp = strncmp((int8_t *)fname, fs.boot->dir_entries[i].filename, check_len);
         if (cmp == 0) {
             return read_dentry_by_index(i, dentry);
