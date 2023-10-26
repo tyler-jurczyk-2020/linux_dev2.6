@@ -25,7 +25,6 @@
 .globl isr_stub_##vector         	 ;\
 .align 4						 	 ;\
 	isr_stub_##vector:           	 ;\
-		pushal  				  	 ;\
 		pushfl					  	 ;\
 		cmpl $0, %EAX			 	 ;\
 		jle isr_invalid_##vector 	 ;\
@@ -43,7 +42,6 @@
 		movl $-1, %EAX    	 	 	 ;\
 	isr_leave_##vector:			 	 ;\
 		popfl 					 	 ;\
-		popal					 	 ;\
 		iret			
 		
 #Below is a macro used to link the C rtc handler to ASM, pushes args and flags/regs to stack

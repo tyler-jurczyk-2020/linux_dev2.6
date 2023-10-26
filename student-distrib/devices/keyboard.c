@@ -289,6 +289,7 @@ side effects: Clears the keyboard buffer, waits for enter until read goes throug
 */
 int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
 	int i;
+	int count = 0;
 	if(nbytes == 0){
 		return 0;
 	}
@@ -303,6 +304,7 @@ int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
 	for(i = 0; i<nbytes; i++){
 		if(i<keyboard.top){
 			((uint8_t*)buffer)[i] = keyboard.buffer[i];
+			count++;
 		}else{
 			((uint8_t*)buffer)[i] = 0;
 		}
@@ -314,7 +316,7 @@ int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
 	}
 	sti();
 	keyboard.enter_lock = 0;
-	return i;
+	return count;
 	
 }
 /*
