@@ -28,7 +28,9 @@ void system_call_handler(unsigned long vector, unsigned long flags, register_str
 //function to fill up the IDT
 void populate_idt();
 
-void setup_exec_stack(uint32_t);
+extern void setup_exec_stack(uint32_t,uint32_t);
+extern uint8_t halt_process(uint32_t,uint32_t);
+extern void flush_tlbs();
 
 /*
 **********************************
