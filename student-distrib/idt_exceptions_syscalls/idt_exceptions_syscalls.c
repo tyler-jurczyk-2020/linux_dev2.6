@@ -138,7 +138,7 @@ uint32_t execute(const uint8_t* command){
         return -1; 
     }
     // Setup paging for executable
-    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+    set_pager_dir_entry(EIGHT_MB); // THIS IS NOT RIGHT!! TEMPORARY FIX FOR INCORRECT HELLO PROGRAM OUTPUT
     // Copy executable to memory
     uint32_t eip;
     open_executable(start_of_prog, &eip); 
