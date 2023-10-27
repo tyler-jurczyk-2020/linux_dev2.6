@@ -21,27 +21,31 @@
 #Makes use of a jump table defined at the end of this file
 #First saves flags/regs, then checks if syscall num is valid, returns -1 if not
 # uses jump table to call handler, then pops args off
-#define isr_system_call(vector)   	 \
-.globl isr_stub_##vector         	 ;\
-.align 4						 	 ;\
-	isr_stub_##vector:           	 ;\
-		pushfl					  	 ;\
-		cmpl $0, %EAX			 	 ;\
-		jle isr_invalid_##vector 	 ;\
-		cmpl $10, %EAX			  	 ;\
-		ja isr_invalid_##vector  	 ;\
-		pushl %EDX		         	 ;\
-		pushl %ECX				 	 ;\
-		pushl %EBX				 	 ;\
-		call *syscall_table(,%EAX,4) ;\
-		popl %EBX			     	 ;\
-		popl %ECX			     	 ;\
-		popl %EDX			     	 ;\
-		jmp isr_leave_##vector 	 	 ;\
-	isr_invalid_##vector: 	  	 	 ;\
-		movl $-1, %EAX    	 	 	 ;\
-	isr_leave_##vector:			 	 ;\
-		popfl 					 	 ;\
+.globl isr_stub_128  	         	 
+.align 4						 	 
+	isr_stub_128:     
+		cli
+		pushl %EBP					 
+		pushl %EDI					 
+		pushl %ESI			
+		cmpl $0, %EAX			 	 
+		jle isr_invalid_128		 	 
+		cmpl $10, %EAX			  	 
+		ja isr_invalid_128		  	 
+		pushl %EDX		         	 
+		pushl %ECX				 	 
+		pushl %EBX				 	 
+		sti
+		call *syscall_table(,%EAX,4) 
+		addl $12, %ESP			     	 
+		jmp isr_leave_128	 	 	 
+	isr_invalid_128:	 	  	 	 
+		movl $-1, %EAX    	 	 	 
+.globl isr_leave_128				
+	isr_leave_128:	
+		popl %ESI					 
+		popl %EDI 					 
+		popl %EBP 					 
 		iret			
 		
 #Below is a macro used to link the C rtc handler to ASM, pushes args and flags/regs to stack
@@ -97,7 +101,7 @@ isr_exception(18)
 isr_exception(19)
 isr_keyboard(33) #0x21, irq1 on the pic
 isr_rtc(40) #0x28, irq8 on the pic
-isr_system_call(128)
+
 
 
 

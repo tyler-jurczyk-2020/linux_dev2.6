@@ -116,11 +116,12 @@ uint32_t halt(uint8_t status){
     // Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
     set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+	flush_tlbs();
     // Setup tss to return to parent
     tss.esp0 = pcb_parent->esp0;
     tss.ss0 = KERNEL_DS;
     // Halt
-    halt_process(status);
+    halt_process(status,pcb_self->halt_ebp);
 	return -1;
 }
 uint32_t execute(const uint8_t* command){
@@ -138,7 +139,8 @@ uint32_t execute(const uint8_t* command){
         return -1; 
     }
     // Setup paging for executable
-    set_pager_dir_entry(EIGHT_MB); // THIS IS NOT RIGHT!! TEMPORARY FIX FOR INCORRECT HELLO PROGRAM OUTPUT
+    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+	flush_tlbs();
     // Copy executable to memory
     uint32_t eip;
     open_executable(start_of_prog, &eip); 
@@ -147,15 +149,16 @@ uint32_t execute(const uint8_t* command){
     pcb_t *parent = get_parent_pcb(avail_process);
     setup_pcb(pcb_self, avail_process, parent);
     // Setup TSS
-    tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process);
+    tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
     tss.ss0 = KERNEL_DS;
     // Setup stack to return to new program
-    setup_exec_stack(eip); 
+	setup_exec_stack(eip,(uint32_t)&(pcb_self->halt_ebp));
+
 	return 0;
 }
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
-    return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
+	return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
 }
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
@@ -195,7 +198,7 @@ uint32_t open(const uint8_t* filename){
     }
     file_desc->file_pos = 0;
     file_desc->flags = 0;
-    return fd_idx;
+	return fd_idx;
 }
 uint32_t close(uint32_t fd){
     if (fd < 2 || fd > 7) {
