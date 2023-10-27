@@ -168,7 +168,6 @@ uint32_t open(const uint8_t* filename){
     if (file_desc == NULL) {
         return -1; 
     }
-	return 0;
     int32_t open_res;
     if (!strncmp((const int8_t *)filename, (const int8_t *)"rtc", 3)) {
         open_res = rtc_open((const uint8_t *)"rtc"); 
@@ -196,6 +195,7 @@ uint32_t open(const uint8_t* filename){
     }
     file_desc->file_pos = 0;
     file_desc->flags = 0;
+    return fd_idx;
 }
 uint32_t close(uint32_t fd){
     if (fd < 2 || fd > 7) {
