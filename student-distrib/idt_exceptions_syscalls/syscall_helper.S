@@ -20,25 +20,48 @@ get_pcb:
 
 .globl setup_exec_stack
 setup_exec_stack:
-    cli
-    pushl %ebp
-    movl %esp, %ebp
-    pushl $0x002B // User Data Segment
-    pushl $0x08400000 // Program Stack Pointer
-    pushfl // EFLAGS
+	cli
+	pushl %EBP
+	movl %ESP, %EBP
+	pushl %EDI
+	#move base pointer to struct to jump back
+	movl 12(%EBP),%EDI
+	movl %EBP,(%EDI)
+	popl %EDI
+	
+	#change data segment register
+	pushw $0x002B
+	popw %DS
+	#User data segment
+    pushl $0x002B 
+	#program stack pointer
+    pushl $0x083ffffc
+	#eflags
+    pushfl
     popl %eax
     orl $0x0200, %eax
     pushl %eax
-    pushl $0x0023 // User Code Segment
-    pushl 8(%ebp) // EIP
+	#user code segment
+    pushl $0x0023 
+	#eip
+    pushl 8(%ebp)
     iret
 .globl halt_process
 halt_process:
-    leave
-    pushl %ebp
-    movl %esp, %ebp
-    movb 8(%ebp), %al
-    movzx %al, %eax
-    leave
+	#set return val
+	andl $0x000000FF, %EAX;
+    movb 4(%esp), %al
+	#reset base ptr
+	movl 8(%esp),%ebp
+	leave
     ret
 
+.globl flush_tlbs
+flush_tlbs:
+	pushl %EBP
+	movl %ESP, %EBP
+	#flush tlbs
+	movl	%cr3,%eax
+	movl	%eax,%cr3
+	leave	
+	ret

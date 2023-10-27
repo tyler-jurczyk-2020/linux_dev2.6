@@ -32,6 +32,7 @@ typedef struct pcb_t {
     uint32_t process_id;
     struct pcb_t *parent;
     uint32_t esp0;
+	uint32_t halt_ebp; //to be set when this process is executed, keeps track of where to return
     uint32_t available[8];
     file_descriptor_t fd[8]; 
 } pcb_t;
@@ -43,8 +44,6 @@ void setup_pcb(pcb_t *pcb, uint32_t my_process_id, pcb_t *parent_pcb);
 pcb_t *get_parent_pcb(uint8_t current_process);
 
 extern pcb_t *get_pcb();
-
-extern uint32_t halt_process(uint8_t);
 
 file_descriptor_t *get_fd(int32_t fd);
 
