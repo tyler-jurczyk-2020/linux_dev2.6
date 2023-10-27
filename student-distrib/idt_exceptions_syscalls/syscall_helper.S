@@ -20,15 +20,25 @@ get_pcb:
 
 .globl setup_exec_stack
 setup_exec_stack:
+    cli
     pushl %ebp
     movl %esp, %ebp
     pushl $0x002B // User Data Segment
     pushl $0x08400000 // Program Stack Pointer
     pushfl // EFLAGS
+    popl %eax
+    orl $0x0200, %eax
+    pushl %eax
     pushl $0x0023 // User Code Segment
     pushl 8(%ebp) // EIP
     iret
-halt:
+.globl halt_process
+halt_process:
+    leave
+    pushl %ebp
+    movl %esp, %ebp
+    movb 8(%ebp), %al
+    movzx %al, %eax
     leave
     ret
 

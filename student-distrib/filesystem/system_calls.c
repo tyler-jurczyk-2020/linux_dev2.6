@@ -110,7 +110,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     return bytes_to_copy; 
 }
 
-int32_t open_executable(const uint8_t *command, uint32_t *eip) {
+int32_t check_executable(const uint8_t *command){
     dentry_t dentry;
     int res = read_dentry_by_name(command, &dentry);
     if (res != 0) {
@@ -121,7 +121,11 @@ int32_t open_executable(const uint8_t *command, uint32_t *eip) {
     if (magic_numbers != MAGIC) {
         return -1;
     }
-    read_data(dentry.inode_num, 24, (uint8_t *)eip, 4); 
-    read_data(dentry.inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
+    return dentry.inode_num;
+}
+
+int32_t open_executable(int32_t inode_num, uint32_t *eip) {
+    read_data(inode_num, 24, (uint8_t *)eip, 4); 
+    read_data(inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
     return 0;
 }

@@ -60,7 +60,8 @@ int32_t dir_close(int32_t fd);
 int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
 
-int32_t open_executable(const uint8_t *command, uint32_t *eip);
+int32_t check_executable(const uint8_t *command);
+int32_t open_executable(int32_t inode_num, uint32_t *eip);
 
 extern filesystem_t fs;
 

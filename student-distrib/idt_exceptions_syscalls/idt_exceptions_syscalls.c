@@ -105,17 +105,44 @@ BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
 
 
 uint32_t halt(uint8_t status){
-	putc('1');
-	return 0;
+    // Mark pcb as available
+    pcb_t *pcb_self = get_pcb();
+    process_ids[pcb_self->process_id] = 0; 
+    // Get parent process
+    pcb_t *pcb_parent = get_pcb()->parent;
+    if (pcb_parent == NULL) {
+        execute((const uint8_t *)"shell"); 
+    }
+    // Update page directory 
+    uint8_t avail_process = pcb_parent->process_id;
+    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+    // Setup tss to return to parent
+    tss.esp0 = pcb_parent->esp0;
+    tss.ss0 = KERNEL_DS;
+    // Halt
+    halt_process(status);
+	return -1;
 }
 uint32_t execute(const uint8_t* command){
+    // Check executable
+    uint8_t copy_cmd[strlen((int8_t *)command)+1];
+    copy_cmd[strlen((int8_t *)command)] = '\0';
+    strncpy((int8_t *)copy_cmd, (int8_t *)command, strlen((int8_t *)command));
+    int32_t start_of_prog = check_executable(copy_cmd);
+    if (start_of_prog < 0) {
+        return -1; 
+    }
+    // Determine process id
+    int8_t avail_process = get_process_id();
+    if (avail_process < 0) {
+        return -1; 
+    }
     // Setup paging for executable
-    set_pager_dir_entry(EIGHT_MB);
+    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
     // Copy executable to memory
     uint32_t eip;
-    open_executable(command, &eip); 
+    open_executable(start_of_prog, &eip); 
     // Setup child pcb
-    uint8_t avail_process = get_process_id();
     pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
     setup_pcb(pcb_self, avail_process, parent);
