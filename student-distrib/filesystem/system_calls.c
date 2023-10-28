@@ -41,8 +41,8 @@ int32_t file_write(int32_t fd, const void *buf, int32_t nbytes) {
 int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
     // Read file and save position we read to
     file_descriptor_t *file_desc = get_fd(fd);
-    int read_bytes = read_data(file_desc->inode, file_desc->file_pos, buf, nbytes); 
-    file_desc->file_pos += read_bytes;
+    int read_bytes = read_data(file_desc->inode, file_desc->file_pos.val, buf, nbytes); 
+    file_desc->file_pos.val += read_bytes;
     return read_bytes;
 }
 
@@ -83,7 +83,9 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     uint32_t bytes_to_copy = nbytes;
     file_descriptor_t *file_desc = get_fd(fd);
-    uint32_t i = file_desc->file_pos;
+    uint32_t i = file_desc->file_pos.dir_entry;
+    uint32_t offset = file_desc->file_pos.entry_pos;
+    uint32_t last_offset = offset;
     // Read all the dir_entries since filesystem is flat
     for(; i<fs.boot->dir_count; i++) {
         if (bytes_to_copy == 0) {
@@ -97,27 +99,32 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
         // Copy the name into the buffer
         // We include newline characters into the count of bytes_to_copy
         uint32_t len_to_copy;
+        // Determine if newline should be injected at the end of reading the filename
+        int32_t is_newline = (bytes_to_copy != 0 && i != fs.boot->dir_count-1);
         if (dentry.filename[FILENAME_LEN-1] != '\0') {
-            len_to_copy = (bytes_to_copy > FILENAME_LEN) ? FILENAME_LEN : bytes_to_copy-1;     
+            len_to_copy = (bytes_to_copy > FILENAME_LEN - offset) ? FILENAME_LEN - offset : bytes_to_copy-is_newline;
+            last_offset = (bytes_to_copy > FILENAME_LEN - offset) ? 0 : bytes_to_copy-is_newline;
         }
         else {
-            len_to_copy = (bytes_to_copy > strlen(dentry.filename)) ? strlen(dentry.filename) : bytes_to_copy-1;
+            len_to_copy = (bytes_to_copy > strlen(dentry.filename) - offset) ? strlen(dentry.filename) - offset : bytes_to_copy-is_newline;
+            last_offset = (bytes_to_copy > strlen(dentry.filename) - offset) ? 0 : bytes_to_copy-is_newline;
         }
-        strncpy(buf, dentry.filename, len_to_copy);
-        int32_t is_newline = (bytes_to_copy != 0 && i != fs.boot->dir_count-1);
+        strncpy(buf, dentry.filename+offset, len_to_copy);
         bytes_to_copy -= len_to_copy + is_newline;
         if (bytes_to_copy != 0 && i != fs.boot->dir_count-1) {
             ((int8_t *)buf)[len_to_copy] = '\n';
         }
         buf += len_to_copy + is_newline;
+        offset = 0;
     }
-    // Check if the last character is newline, if so, reset it to prevent doubling of newline in ls
+    // Update file position
+    file_desc->file_pos.dir_entry = (last_offset != 0) ? i-1 : i;
+    file_desc->file_pos.entry_pos = last_offset;
+    // Check if the last character is newline, if so, set it to null to prevent doubling of newline in ls
     buf--;
     if (((char *)buf)[0] == '\n') {
         ((char *)buf)[0] = '\0'; 
     }
-    // Update offset
-    file_desc->file_pos = i;
     return nbytes - bytes_to_copy; 
 }
 

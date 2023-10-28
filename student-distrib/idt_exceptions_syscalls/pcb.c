@@ -22,13 +22,13 @@ void setup_pcb(pcb_t *pcb, uint32_t my_process_id, pcb_t *parent_pcb) {
     pcb->fd[0] = (file_descriptor_t) {
         .file_ops = &stdin_table,
         .inode = -1,
-        .file_pos = 0,
+        .file_pos = {{.val = 0}},
         .flags = 0
     };
     pcb->fd[1] = (file_descriptor_t) {
         .file_ops = &stdout_table,
         .inode = -1,
-        .file_pos = 0,
+        .file_pos = {{.val = 0}},
         .flags = 0
     };
     uint32_t i;
