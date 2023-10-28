@@ -86,9 +86,6 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     uint32_t i = file_desc->file_pos;
     // Read all the dir_entries since filesystem is flat
     for(; i<fs.boot->dir_count; i++) {
-        if (bytes_to_copy == 0) {
-            break; 
-        }
         dentry_t dentry; 
         int32_t res = read_dentry_by_index(i, &dentry); 
         if (res != 0) {
@@ -98,15 +95,18 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
         // We include newline characters into the count of bytes_to_copy
         uint32_t len_to_copy;
         if (dentry.filename[FILENAME_LEN-1] != '\0') {
-            len_to_copy = (bytes_to_copy > FILENAME_LEN) ? FILENAME_LEN : bytes_to_copy-1;     
+            len_to_copy = (bytes_to_copy >= FILENAME_LEN) ? FILENAME_LEN : 0;     
         }
         else {
-            len_to_copy = (bytes_to_copy > strlen(dentry.filename)) ? strlen(dentry.filename) : bytes_to_copy-1;
+            len_to_copy = (bytes_to_copy >= strlen(dentry.filename)) ? strlen(dentry.filename) : 0;
+        }
+        if (len_to_copy == 0) {
+            break; 
         }
         strncpy(buf, dentry.filename, len_to_copy);
-        int32_t is_newline = (bytes_to_copy != 0 && i != fs.boot->dir_count-1);
+        int32_t is_newline = (len_to_copy != bytes_to_copy);
         bytes_to_copy -= len_to_copy + is_newline;
-        if (bytes_to_copy != 0 && i != fs.boot->dir_count-1) {
+        if (is_newline) {
             ((int8_t *)buf)[len_to_copy] = '\n';
         }
         buf += len_to_copy + is_newline;
