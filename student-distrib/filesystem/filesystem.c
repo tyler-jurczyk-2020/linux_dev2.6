@@ -5,7 +5,7 @@
 
 filesystem_t fs;
 
-/* void init_filesystem();
+/* int32_t init_filesystem();
  * Inputs: pointer to the filesystem module
  * Return Value: none
  * Function: Initializes the filesystem struct for accessing
@@ -17,7 +17,7 @@ void init_filesystem(module_t* mod_info) {
     fs.end = mod_info->mod_end;
 }
 
-/* void read_dentry_by_index();
+/* int32_t read_dentry_by_index();
  * Inputs: uint32_t index into dir_entries, dentry_t *dentry to store result
  * Return Value: -1 if invalid index provided
  * Function: Read the dentry at the provided index and store the resulting dentry
@@ -33,7 +33,7 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
     return 0;     
 }
 
-/* void read_dentry_by_name();
+/* int32_t read_dentry_by_name();
  * Inputs: const uint8_t *fname of the file name to look for, dentry_t *dentry to store result
  * Return Value: -2 if file not found, else return read_dentry_by_index return code
  * Function: Search for the dentry with the passed fname, and if found, retrieve the dentry
@@ -51,7 +51,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     return -2; // Exited without finding file;
 }
 
-/* void read_data();
+/* int32_t read_data();
  * Inputs: inode we want to read, file position offset, buf to store data retrieved, number of bytes to attempt to read 
  * Return Value: -1 if offset is out of bounds, else the number of bytes we are unable to read
  * Function: We attempt to read length bytes from the collection of data blocks associated with the inode. If we are able to,
@@ -66,8 +66,8 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
     uint32_t block_idx = offset/BYTES_PER_BLOCK;
     // Determine the number of bytes we are allowed to read
     uint32_t bytes_to_read = (length > inode_block.length-offset) ? inode_block.length-offset : length;
-    // # Bytes of the request that is over what we can actually read
-    uint32_t bytes_not_read = length - bytes_to_read;
+    // # Bytes of the request that is ultimately read
+    uint32_t bytes_read = bytes_to_read;
     
     // Read out all the bytes that we are able to
     while (bytes_to_read > 0) {
@@ -86,5 +86,5 @@ int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length
         block_idx++;
         start = 0;
     }
-    return bytes_not_read;
+    return bytes_read;
 }
