@@ -21,20 +21,10 @@ extern file_ops_table_t file_table;
 extern file_ops_table_t directory_table; 
 extern file_ops_table_t rtc_table; 
 
-typedef struct {
-    union {
-        uint32_t val;
-        struct {
-            uint16_t dir_entry;
-            uint16_t entry_pos;
-        };
-    };
-} file_pos_t;
-
 typedef struct file_descriptor_t {
     file_ops_table_t *file_ops;
     int32_t inode;
-    file_pos_t file_pos;
+    int32_t file_pos;
     int32_t flags;
 } file_descriptor_t;
 

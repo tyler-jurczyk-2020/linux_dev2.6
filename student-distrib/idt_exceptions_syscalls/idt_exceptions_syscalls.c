@@ -196,7 +196,7 @@ uint32_t open(const uint8_t* filename){
         file_desc->file_ops = &file_table;
         file_desc->inode = open_res;
     }
-    file_desc->file_pos.val = 0;
+    file_desc->file_pos = 0;
     file_desc->flags = 0;
 	return fd_idx;
 }
