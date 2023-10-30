@@ -287,8 +287,9 @@ inputs: file descriptor (ignored), buffer to be written to, number of bytes in b
 outputs: number of bytes written
 side effects: Clears the keyboard buffer, waits for enter until read goes through
 */
-int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes){
+int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
 	int i;
+	int count = 0;
 	if(nbytes == 0){
 		return 0;
 	}
@@ -302,9 +303,10 @@ int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes){
 	cli();
 	for(i = 0; i<nbytes; i++){
 		if(i<keyboard.top){
-			buffer[i] = keyboard.buffer[i];
+			((uint8_t*)buffer)[i] = keyboard.buffer[i];
+			count++;
 		}else{
-			buffer[i] = 0;
+			((uint8_t*)buffer)[i] = 0;
 		}
 	}
 	if(keyboard.top>=i){//bring down the top to how many were left over, and return this amount
@@ -314,7 +316,7 @@ int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes){
 	}
 	sti();
 	keyboard.enter_lock = 0;
-	return i;
+	return count;
 	
 }
 /*
@@ -324,7 +326,7 @@ inputs: buffer to be written, size of buffer
 outputs: success on successful writing
 side effects: writes to video memory
 */
-int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes){
+int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes){
 	int i;
 	if(nbytes == 0){
 		return 1;
@@ -334,9 +336,11 @@ int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes){
 	}
 	
 	for(i = 0; i<nbytes; i++){
-		if(buffer[i]!=NULL){
-			putc(buffer[i]);
+		if(((const uint8_t *)buffer)[i]!=NULL){
+			putc(((const uint8_t*)buffer)[i]);
 		}
 	}
 	return 0;
 }
+
+

@@ -2,6 +2,10 @@
 #include "idt_entries.h"
 #include "../x86_desc.h"
 #include "../lib.h"
+#include "../filesystem/paging.h"
+#include "../filesystem/filesystem.h"
+#include "pcb.h"
+#include "../devices/rtc.h"
 
 /*
 Struct to map vector#'s to their english error meaning
@@ -67,6 +71,7 @@ system_call_handler: Called whenever a INT occurs (vector x80)
  outputs: none
  side effects: holds the system in a permanent while loop and prints the corresponding parameter
 */
+/* NOT IN USE NOW */
 void system_call_handler(unsigned long parameter, unsigned long flags, register_struct regs){
 	printf("systemcall number: %x",parameter);
 	while(1);
@@ -98,29 +103,151 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
 **************************************************
 */
+
+/*
+ * Halt: Called whenever a program finishes execution or a program raises an exception
+ * Inputs : Status, 0 if finished normally, 256 if raised an exception, neither for special status
+ * Outputs: none (should not return from this function)
+ * Side Effects: Frees the current process' kernel stack and jumps to caller's kernel stack to return from execute call
+ *               Updates paging and the TSS
+ */
 uint32_t halt(uint8_t status){
-	putc('1');
-	return 0;
+    // Mark pcb as available
+    pcb_t *pcb_self = get_pcb();
+    process_ids[pcb_self->process_id] = 0; 
+    // Get parent process
+    pcb_t *pcb_parent = get_pcb()->parent;
+    if (pcb_parent == NULL) {
+        execute((const uint8_t *)"shell"); 
+    }
+    // Update page directory 
+    uint8_t avail_process = pcb_parent->process_id;
+    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+	flush_tlbs();
+    // Setup tss to return to parent
+    tss.esp0 = pcb_parent->esp0;
+    tss.ss0 = KERNEL_DS;
+    // Halt
+    halt_process(status,pcb_self->halt_ebp);
+	return -1;
 }
+
+/*
+ * Execute: Tries to execute the inputted command
+ * Inputs : command/program to be run
+ * Outputs: value passed to halt
+ * Side Effects: Changes the paging, opens files, copies executable to memory, allocates kernel stack
+ *               Sets up the PCB, gets parent's info, sets up TSS, pushes info to stack to iret into user space
+ */
 uint32_t execute(const uint8_t* command){
-	putc('2');
+    // Check executable
+    uint8_t copy_cmd[strlen((int8_t *)command)+1];
+    copy_cmd[strlen((int8_t *)command)] = '\0';
+    strncpy((int8_t *)copy_cmd, (int8_t *)command, strlen((int8_t *)command));
+    int32_t start_of_prog = check_executable(copy_cmd);
+    if (start_of_prog < 0) {
+        return -1; 
+    }
+    // Determine process id
+    int8_t avail_process = get_process_id();
+    if (avail_process < 0) {
+        return -1; 
+    }
+    // Setup paging for executable
+    set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+	flush_tlbs();
+    // Copy executable to memory
+    uint32_t eip;
+    open_executable(start_of_prog, &eip); 
+    // Setup child pcb
+    pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
+    pcb_t *parent = get_parent_pcb(avail_process);
+    setup_pcb(pcb_self, avail_process, parent);
+    // Setup TSS
+    tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
+    tss.ss0 = KERNEL_DS;
+    // Setup stack to return to new program
+	setup_exec_stack(eip,(uint32_t)&(pcb_self->halt_ebp));
+
 	return 0;
 }
+
+/*
+ * Read: Uses the read function associated with the file descriptor
+ * Inputs : File descriptor (file index), buffer to be copied into, nbytes to copy
+ * Outputs: number of bytes read
+ * Side Effects: none
+ */
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
-	putc('3');
-	return 0;
+    pcb_t *cur_pcb = get_pcb();
+	return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
 }
+/*
+ * Write: Uses the write function associated with the file descriptor
+ * Inputs : File descriptor (file index), buffer to write into file, nbytes to write
+ * Outputs: number of bytes written
+ * Side Effects: none
+ */
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
-	putc('4');
-	return 0;
+    pcb_t *cur_pcb = get_pcb();
+    return cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
 }
+/*
+ * Open: Attempts to open a file with the given filename
+ * Inputs : filename (name of file to be opened)
+ * Outputs: success (filedescriptor 'file index'), or failure (-1)
+ * Side Effects: Sets up the pcb entry if filename is correct & there is space
+ */
 uint32_t open(const uint8_t* filename){
-	putc('5');
-	return 0;
+    // Setup pcb entry
+    int32_t fd_idx = get_avail_fd();
+    file_descriptor_t *file_desc = get_fd(fd_idx);
+    if (file_desc == NULL) {
+        return -1; 
+    }
+    int32_t open_res;
+    if (!strncmp((const int8_t *)filename, (const int8_t *)"rtc", 3)) {
+        open_res = rtc_open((const uint8_t *)"rtc"); 
+        if (open_res != 0) {
+            return -1;
+        }
+        file_desc->file_ops = &rtc_table;
+        file_desc->inode = -1;
+    }
+    else if (!strncmp((const int8_t *)filename, (const int8_t *)".", 1)) {
+        open_res = dir_open((const uint8_t *)"."); 
+        if (open_res != 0) {
+            return -1;
+        }
+        file_desc->file_ops = &directory_table;
+        file_desc->inode = -1;
+    }
+    else {
+        file_open(filename);
+        if (open_res < 0) {
+            return -1;
+        }
+        file_desc->file_ops = &file_table;
+        file_desc->inode = open_res;
+    }
+    file_desc->file_pos = 0;
+    file_desc->flags = 0;
+	return fd_idx;
 }
+
+/*
+ * Close: Uses the close function associated with the file descriptor, if available
+ * Inputs : File descriptor (file index)
+ * Outputs: Success/Failue
+ * Side Effects: none
+ */
 uint32_t close(uint32_t fd){
-	putc('6');
-	return 0;
+    if (fd < 2 || fd > 7) {
+        return -1; 
+    }
+    pcb_t *cur_pcb = get_pcb();
+    cur_pcb->available[fd] = 1;
+	return cur_pcb->fd[fd].file_ops->close(fd);
 }
 uint32_t getargs(uint8_t* buf, uint32_t nbytes){
 	putc('7');

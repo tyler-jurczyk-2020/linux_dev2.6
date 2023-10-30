@@ -43,3 +43,26 @@ void setup_pager_directory() {
         }
     }
 }
+
+/* void set_pager_dir_entry();
+ * Inputs: address to physical memory to map 128mb address to
+ * Return Value: none
+ *  Function: Setup the program page to point to the specified physical address */
+
+void set_pager_dir_entry(uint32_t page_addr) {
+    page_directory_entry_t* page_dir = get_cr3();  
+    page_directory_entry_mb_t* entry = &page_dir[PROGRAM_IDX].mb;
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 1;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->page_size = 1;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->tbl_attr_idx = 0;
+    entry->reserved = 0;
+    entry->base_addr = page_addr >> 22;
+}

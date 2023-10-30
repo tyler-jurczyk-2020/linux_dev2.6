@@ -1,4 +1,5 @@
 #include "tests.h"
+#include "idt_exceptions_syscalls/idt_exceptions_syscalls.h"
 #include "x86_desc.h"
 #include "lib.h"
 #include "devices/keyboard.h"
@@ -177,10 +178,10 @@ void launch_tests(){
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
     //TEST_OUTPUT("RTC_test", rtc_test())
     // Test the filesystem
-    // test_large_file_single();
-    // test_large_file_multi();
-    // test_small_file();
-    // test_dir_read_single();
-    // test_dir_read_multi();
-	//test_read_exec();
+    //test_large_file_single();
+    //test_large_file_multi();
+    //test_small_file();
+    //test_dir_read_single();
+    //test_dir_read_multi();
+    execute((const uint8_t *)"shell");
     }

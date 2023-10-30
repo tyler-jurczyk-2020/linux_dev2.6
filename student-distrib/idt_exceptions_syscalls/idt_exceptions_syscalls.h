@@ -23,10 +23,14 @@ typedef struct interrupt_identifier{
 
 //handler for all exceptions as of now
 void exception_handler(unsigned long vector, unsigned long flags, register_struct regs);
-//handler for all system calls as of now
+//handler for all system calls (unused)
 void system_call_handler(unsigned long vector, unsigned long flags, register_struct regs);
 //function to fill up the IDT
 void populate_idt();
+
+extern void setup_exec_stack(uint32_t,uint32_t);
+extern uint8_t halt_process(uint32_t,uint32_t);
+extern void flush_tlbs();
 
 /*
 **********************************

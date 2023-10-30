@@ -3,9 +3,14 @@
 
 #include "../types.h" 
 #include "../multiboot.h"
+#include "../idt_exceptions_syscalls/pcb.h"
 
 #define FILENAME_LEN 32 
 #define BYTES_PER_BLOCK 4096
+#define EIGHT_MB 0x00800000
+#define FOUR_MB 0x00400000
+#define PROGRAM_START 0x08048000
+#define MAGIC 0x464c457f
 
 typedef struct {
     int8_t filename[FILENAME_LEN];
@@ -38,12 +43,6 @@ typedef struct {
     uint32_t end;
 } filesystem_t;
 
-typedef struct {
-    int32_t *file_ops;
-    int32_t inode;
-    int32_t file_pos;
-    int32_t flags;
-} process_control_t;
 
 void init_filesystem(module_t* mod_info);
 
@@ -61,7 +60,9 @@ int32_t dir_close(int32_t fd);
 int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes);
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes);
 
-extern process_control_t pcb;
+int32_t check_executable(const uint8_t *command);
+int32_t open_executable(int32_t inode_num, uint32_t *eip);
+
 extern filesystem_t fs;
 
 #endif

@@ -1,6 +1,7 @@
 .text
 .globl enable_paging
 .globl mod_cr3
+.globl get_cr3
 
  /* void enable_paging();
  * Inputs: none 
@@ -38,5 +39,17 @@ mod_cr3:
     movl %esp, %ebp
     movl 8(%ebp), %eax
     movl %eax, %cr3
+    leave
+    ret
+
+/* void get_cr3(uint32_t *);
+ * Inputs: none 
+ * Return Value: pointer to current page directory 
+ *  Function: Retrieve a pointer to the page directory stored in control register 3 */
+
+get_cr3:
+    pushl %ebp
+    movl %esp, %ebp
+    movl %cr3, %eax
     leave
     ret

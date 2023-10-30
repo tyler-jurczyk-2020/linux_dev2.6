@@ -61,8 +61,16 @@ extern int terminal_open(const uint8_t* filename);
 /*do nothing*/
 extern int terminal_close(int32_t fd);
 /*read from keyboard buffer*/
-extern int terminal_read(uint32_t fd, uint8_t* buffer, uint32_t nbytes);
+extern int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes);
 /*puts what is read on to terminal*/
-extern int terminal_write(int32_t fd, const uint8_t* buffer, uint32_t nbytes);
+extern int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes);
+
+extern int dummy_read();
+
+extern int dummy_open();
+
+extern int dummy_write();
+
+extern int dummy_close();
 
 #endif
