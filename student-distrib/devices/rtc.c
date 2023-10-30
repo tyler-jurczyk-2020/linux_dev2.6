@@ -32,7 +32,6 @@ void rtc_init() {
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
 int rtc_interrupt_rate(uint32_t frequency) {
-	printf("reverived f: %d  ", frequency);
 	int updated_rate = 6;
 
 	//ERROR CHECKING
@@ -116,18 +115,22 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	*/
 
 	//ERROR CHECKING
-
+	uint8_t buf[128];
+	buf[0] = 0;
 	rtc_init();
 
 	//rate *= 2
-	int rate = LOW_FREQ; //Lowest possible frequency, starting with low frequency 
+	int rate = HIGH_FREQ; //Lowest possible frequency, starting with low frequency 
 	rate &= rate_value; //rate above 2 and not over 15
 
+	
+	
 	outb(Register_A, PORT_index); //set index to reg A
 	char prev = inb(PORT_RW); //initial value of reg A
 	outb(Register_A, PORT_RW); //reset index to A
 	outb( (prev & 0xF0) | rate, PORT_RW); //write rate to A, rate is bottom 4 bits
 
+	rtc_write(0, buf, 16);
 	return 0; // Success
 
  }
@@ -168,7 +171,6 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		//empty while loop
 		
 	}
-	printf("1");
 	interrupt = 0; //resetting flag to 0, no interrupt occurs
 	return 0;
 
