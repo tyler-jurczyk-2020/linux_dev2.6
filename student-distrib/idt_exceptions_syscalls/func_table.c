@@ -9,6 +9,9 @@ BELOW ARE DUMMY FUNCTIONS FOR STDIN/STDOUT
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+/* dummy_open, dummy_close, dummy_write, dummy_read are used to fill in spots for standard in and out.
+    should be never called.
+*/
 int32_t dummy_open(const uint8_t *filename){
 	return -1;
 }
