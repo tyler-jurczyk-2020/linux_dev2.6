@@ -104,6 +104,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
             break; 
         }
         strncpy(buf, dentry.filename, len_to_copy);
+        // Perform check to see if we need to inject a newline character
         int32_t is_newline = (len_to_copy != bytes_to_copy);
         bytes_to_copy -= len_to_copy + is_newline;
         if (is_newline) {
@@ -121,6 +122,11 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     return nbytes - bytes_to_copy; 
 }
 
+/* int32_t check_executable();
+ * Inputs: Pointer to array of chars holding the name of binary to execute 
+ * Return Value: Negative if faliure, else return the inode_num associated with binary
+ * Function: Performs a check on the passed binary to see if it is a valid executable */
+
 int32_t check_executable(const uint8_t *command){
     dentry_t dentry;
     int res = read_dentry_by_name(command, &dentry);
@@ -135,8 +141,19 @@ int32_t check_executable(const uint8_t *command){
     return dentry.inode_num;
 }
 
+/* int32_t open_executable();
+ * Inputs: inode number associated with the exectuable and a pointer to the instruciton pointer 
+ * Return Value: Negative if faliure, else return 0 for success 
+ * Function: Attempts to open the executable by copying it to the correct place in memory */
+
 int32_t open_executable(int32_t inode_num, uint32_t *eip) {
-    read_data(inode_num, 24, (uint8_t *)eip, 4); 
-    read_data(inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
+    int res = read_data(inode_num, 24, (uint8_t *)eip, 4); 
+    if (res != 0) {
+        return res;
+    }
+    res = read_data(inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
+    if (res != 0) {
+        return res;
+    }
     return 0;
 }

@@ -53,7 +53,7 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
 
 /* int32_t read_data();
  * Inputs: inode we want to read, file position offset, buf to store data retrieved, number of bytes to attempt to read 
- * Return Value: -1 if offset is out of bounds, else the number of bytes we are unable to read
+ * Return Value: -1 if offset is out of bounds, else the number of bytes we are able to read
  * Function: We attempt to read length bytes from the collection of data blocks associated with the inode. If we are able to,
  * we read all the data requested, otherwise we just read as much as we can*/
 int32_t read_data(uint32_t inode, uint32_t offset, uint8_t *buf, uint32_t length) {

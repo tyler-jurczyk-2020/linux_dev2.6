@@ -42,6 +42,11 @@ mod_cr3:
     leave
     ret
 
+/* void get_cr3(uint32_t *);
+ * Inputs: none 
+ * Return Value: pointer to current page directory 
+ *  Function: Retrieve a pointer to the page directory stored in control register 3 */
+
 get_cr3:
     pushl %ebp
     movl %esp, %ebp
