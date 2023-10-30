@@ -148,11 +148,11 @@ int32_t check_executable(const uint8_t *command){
 
 int32_t open_executable(int32_t inode_num, uint32_t *eip) {
     int res = read_data(inode_num, 24, (uint8_t *)eip, 4); 
-    if (res != 0) {
+    if (res < 0) {
         return res;
     }
     res = read_data(inode_num, 0, (uint8_t *)PROGRAM_START, FOUR_MB);
-    if (res != 0) {
+    if (res < 0) {
         return res;
     }
     return 0;

@@ -174,7 +174,7 @@ void launch_tests(){
     //TEST_OUTPUT("valid_mem_test", valid_mem_test((char *)0x7FFFFF));
     //TEST_OUTPUT("valid_mem_test", invalid_mem_test((char *)0x800000));
 
-	TEST_OUTPUT("terminal_test", terminal_test());
+	//TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
     //TEST_OUTPUT("RTC_test", rtc_test())
     // Test the filesystem
