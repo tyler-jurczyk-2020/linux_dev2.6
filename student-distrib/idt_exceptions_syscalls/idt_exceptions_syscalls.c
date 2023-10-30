@@ -71,6 +71,7 @@ system_call_handler: Called whenever a INT occurs (vector x80)
  outputs: none
  side effects: holds the system in a permanent while loop and prints the corresponding parameter
 */
+/* NOT IN USE NOW */
 void system_call_handler(unsigned long parameter, unsigned long flags, register_struct regs){
 	printf("systemcall number: %x",parameter);
 	while(1);
@@ -103,7 +104,13 @@ BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
 **************************************************
 */
 
-
+/*
+ * Halt: Called whenever a program finishes execution or a program raises an exception
+ * Inputs : Status, 0 if finished normally, 256 if raised an exception, neither for special status
+ * Outputs: none (should not return from this function)
+ * Side Effects: Frees the current process' kernel stack and jumps to caller's kernel stack to return from execute call
+ *               Updates paging and the TSS
+ */
 uint32_t halt(uint8_t status){
     // Mark pcb as available
     pcb_t *pcb_self = get_pcb();
@@ -124,6 +131,14 @@ uint32_t halt(uint8_t status){
     halt_process(status,pcb_self->halt_ebp);
 	return -1;
 }
+
+/*
+ * Execute: Tries to execute the inputted command
+ * Inputs : command/program to be run
+ * Outputs: value passed to halt
+ * Side Effects: Changes the paging, opens files, copies executable to memory, allocates kernel stack
+ *               Sets up the PCB, gets parent's info, sets up TSS, pushes info to stack to iret into user space
+ */
 uint32_t execute(const uint8_t* command){
     // Check executable
     uint8_t copy_cmd[strlen((int8_t *)command)+1];
@@ -156,14 +171,33 @@ uint32_t execute(const uint8_t* command){
 
 	return 0;
 }
+
+/*
+ * Read: Uses the read function associated with the file descriptor
+ * Inputs : File descriptor (file index), buffer to be copied into, nbytes to copy
+ * Outputs: number of bytes read
+ * Side Effects: none
+ */
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
 	return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
 }
+/*
+ * Write: Uses the write function associated with the file descriptor
+ * Inputs : File descriptor (file index), buffer to write into file, nbytes to write
+ * Outputs: number of bytes written
+ * Side Effects: none
+ */
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
     pcb_t *cur_pcb = get_pcb();
     return cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
 }
+/*
+ * Open: Attempts to open a file with the given filename
+ * Inputs : filename (name of file to be opened)
+ * Outputs: success (filedescriptor 'file index'), or failure (-1)
+ * Side Effects: Sets up the pcb entry if filename is correct & there is space
+ */
 uint32_t open(const uint8_t* filename){
     // Setup pcb entry
     int32_t fd_idx = get_avail_fd();
@@ -200,6 +234,13 @@ uint32_t open(const uint8_t* filename){
     file_desc->flags = 0;
 	return fd_idx;
 }
+
+/*
+ * Close: Uses the close function associated with the file descriptor, if available
+ * Inputs : File descriptor (file index)
+ * Outputs: Success/Failue
+ * Side Effects: none
+ */
 uint32_t close(uint32_t fd){
     if (fd < 2 || fd > 7) {
         return -1; 

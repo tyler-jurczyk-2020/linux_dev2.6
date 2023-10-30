@@ -1,3 +1,9 @@
+#
+# get_pcb: Gets the PCB* associated with this kernel stack
+# Inputs: none
+# Outputs: PCB* (by and-ing the stack ptr)
+# Side Effects: EAX is set to PCB*
+#
 .globl get_pcb
 get_pcb:
 	#setup stack
@@ -17,6 +23,11 @@ get_pcb:
 	#teardown and return
 	leave
 	ret
+
+# setup_exec_stack: Prepares and returns from kernel space to newly executing user space program
+# Inputs: EIP of the new process, PCB of new process
+# Outputs: return value from halt system call
+# Side Effects: jumps to user space
 
 .globl setup_exec_stack
 setup_exec_stack:
@@ -56,6 +67,13 @@ halt_process:
 	leave
     ret
 
+
+/*
+ * flush_tlbs: flushes tlbs
+ * Inputs : none
+ * Outputs: none
+ * Side Effects: flushes tlbs (wow!)
+ */
 .globl flush_tlbs
 flush_tlbs:
 	pushl %EBP
