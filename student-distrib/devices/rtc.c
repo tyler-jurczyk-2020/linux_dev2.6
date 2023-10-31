@@ -214,7 +214,15 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	}
 
-	uint32_t rate = nbytes;
+    // Get rate out of buffer
+	uint8_t r[nbytes];
+    memcpy(r, buf, nbytes);
+    uint32_t rate = 0;
+    uint32_t i;
+    for(i=0; i<nbytes; i++){
+        rate |= (uint32_t)r[i] << 8*i; 
+    }
+
 	int new_rate = rtc_interrupt_rate(rate);
 	
 	new_rate &= rate_value; 
