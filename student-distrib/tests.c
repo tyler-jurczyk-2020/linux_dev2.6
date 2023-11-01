@@ -117,18 +117,19 @@ int rtc_test(){
 	TEST_HEADER;
 	uint8_t name[1];
 	name[0] = 'A';
-	uint8_t buf[128];
+	int buf;
 	int req;
 	int i;
 	terminal_open(name);
 	rtc_open(0);
-	buf[0] = 0;
 	while(1){
 		for (req = 2; req <= 1024; req*=2){
 			printf("frequence: %d  ", req);
-			rtc_write(0, buf, req);
+			buf = req;
+			rtc_write(0, &buf, 4);
 			for (i = 0; i < 2*req; i++){
 				rtc_read(0, buf, req); 
+				printf("1");
 			}
 			printf("\n");
 		}
