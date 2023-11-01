@@ -88,4 +88,28 @@ int32_t get_avail_fd() {
     return -1;
 }
 
+/*
+ * uint32_t parse_arguments
+ * INPUTS: char* command char* executable_buf, char* argument_buf
+ * OUTPUTS: Size of argument buf
+ * Function : parses the executable name and arguments from the command string
+ */
+uint32_t parse_arguments(char* command, char* executable_buf, char* argument_buf){
+	uint32_t traverse = 0;
+	uint32_t arg_count = 0;
+	while(traverse < 32 && command[traverse] != '\0' && command[traverse] != ' ' && command[traverse] != '\n'){
+		executable_buf[traverse] = command[traverse];
+		traverse++;
+	}
+	executable_buf[traverse] = '\0';
+	while(command[traverse] == ' '){
+		traverse++;
+	}
+	while(traverse<128 && command[traverse] != '\n'){
+		argument_buf[arg_count] = command[traverse];
+		traverse++;
+		arg_count++;
+	}
+	return arg_count;
+}
 
