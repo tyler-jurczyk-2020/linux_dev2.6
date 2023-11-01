@@ -254,7 +254,10 @@ uint32_t getargs(uint8_t* buf, uint32_t nbytes){
 	return 0;
 }
 uint32_t vidmap(uint8_t** screen_start){
-	putc('8');
+    if ((int32_t) screen_start < PROGRAM_ADDR || (int32_t) screen_start > PROGRAM_ADDR + FOUR_MB) {
+        return -1; 
+    }
+    *screen_start = (uint8_t *)VMEM_ADDR;
 	return 0;
 }
 uint32_t set_handler(uint32_t signum, void* handler_address){
