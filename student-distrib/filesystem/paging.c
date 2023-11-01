@@ -1,9 +1,12 @@
 #include "../types.h"
 #include "paging.h"
+#include "../idt_exceptions_syscalls/idt_exceptions_syscalls.h"
 
 page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
 page_table_entry_t page_tbl[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
+
+page_table_entry_t page_tbl_vmem[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
 /* void setup_pager_table();
  * Inputs: none 
@@ -50,8 +53,8 @@ void setup_pager_directory() {
  *  Function: Setup the program page to point to the specified physical address */
 
 void set_pager_dir_entry(uint32_t page_addr) {
-    page_directory_entry_t* page_dir = get_cr3();  
-    page_directory_entry_mb_t* entry = &page_dir[PROGRAM_IDX].mb;
+    page_directory_entry_t* cur_page_dir = get_cr3();  
+    page_directory_entry_mb_t* entry = &cur_page_dir[PROGRAM_IDX].mb;
     entry->present = 1;
     entry->r_w = 1;
     entry->usr_supr = 1;
@@ -65,4 +68,33 @@ void set_pager_dir_entry(uint32_t page_addr) {
     entry->tbl_attr_idx = 0;
     entry->reserved = 0;
     entry->base_addr = page_addr >> 22;
+}
+
+void setup_pager_vidmap_entry(uint32_t vmem_addr) {
+    page_table_entry_t* entry = &page_tbl_vmem[(vmem_addr >> 12) & 0x3FF];
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 1;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->tbl_attr_idx = 0;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->base_addr = 0xB8;
+}
+
+void setup_pager_vidmap_table(uint32_t vmem_addr) {
+    unsigned int i;
+    for(i = 0; i < TABLE_SZ; i++) {
+        if (i == ((vmem_addr >> 12) & 0x3FF)) {
+            setup_pager_vidmap_entry(vmem_addr); 
+        } 
+        else {
+            page_tbl_vmem[i].entry = EMPTY_PAGE;
+        }
+    }   
+    page_directory_entry_t* cur_page_dir = get_cr3();  
+    cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
 }

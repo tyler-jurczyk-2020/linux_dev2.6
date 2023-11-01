@@ -10,7 +10,8 @@
 #define KERNEL_PAGE_FLAGS 0x00400183
 #define EMPTY_PAGE 0x02
 #define PROGRAM_IDX 32
-
+#define PROGRAM_ADDR 0x08000000 //128mb
+#define VMEM_ADDR 0x08400000 // 132mb
 typedef struct {
     union {
         uint32_t entry;
@@ -93,5 +94,9 @@ void mod_cr3(uint32_t *);
 page_directory_entry_t *get_cr3();
 
 void set_pager_dir_entry(uint32_t page_addr);
+
+void setup_pager_vidmap_entry(uint32_t vmem_addr);
+
+void setup_pager_vidmap_table(uint32_t vmem_addr);
 
 #endif

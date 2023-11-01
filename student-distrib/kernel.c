@@ -153,6 +153,9 @@ void entry(unsigned long magic, unsigned long addr) {
 
 	// Enable paging
 	enable_paging();
+
+	// Setup paging for user level video memory
+	setup_pager_vidmap_table(VMEM_ADDR);
 	
     /* Init the PIC */
     i8259_init();
