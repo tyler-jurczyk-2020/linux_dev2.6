@@ -39,10 +39,13 @@ int32_t read_dentry_by_index (uint32_t index, dentry_t* dentry) {
  * Function: Search for the dentry with the passed fname, and if found, retrieve the dentry
  * using read_dentry_by_index */
 int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
+    if (strlen((const int8_t*)fname) > FILENAME_LEN) {
+        return -1;
+    }
     unsigned int i;
     // Iterate over all dir_entries and find the name through string comparison
     for(i=0; i<fs.boot->dir_count; i++) {
-        uint32_t check_len = (strlen((int8_t *)fs.boot->dir_entries[i].filename) > FILENAME_LEN) ? FILENAME_LEN : strlen((int8_t *)fs.boot->dir_entries[i].filename);
+        uint32_t check_len = strlen((const int8_t *)fname);
         int cmp = strncmp((int8_t *)fname, fs.boot->dir_entries[i].filename, check_len);
         if (cmp == 0) {
             return read_dentry_by_index(i, dentry);
