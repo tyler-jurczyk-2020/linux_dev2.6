@@ -286,3 +286,4 @@ syscall_table:
 	.long vidmap
 	.long set_handler
 	.long sigreturn
+

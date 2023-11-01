@@ -11,7 +11,7 @@
 int32_t file_open(const uint8_t *filename) {
     dentry_t dentry;
     int res = read_dentry_by_name(filename, &dentry);
-    if (res != 0) {
+    if (res < 0) {
         return res; 
     }
     return dentry.inode_num;
@@ -54,7 +54,7 @@ int32_t file_read(int32_t fd, void *buf, int32_t nbytes) {
 int32_t dir_open(const uint8_t *filename) {
     dentry_t dentry;
     int res = read_dentry_by_name(filename, &dentry);
-    if (res != 0) {
+    if (res < 0) {
         return res; 
     }
     return 0;
@@ -130,7 +130,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 int32_t check_executable(const uint8_t *command){
     dentry_t dentry;
     int res = read_dentry_by_name(command, &dentry);
-    if (res != 0) {
+    if (res < 0) {
         return res; 
     }
     uint32_t magic_numbers;

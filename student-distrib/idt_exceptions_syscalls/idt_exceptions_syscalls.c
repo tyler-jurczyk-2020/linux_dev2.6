@@ -87,15 +87,15 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 	printf("exception received... ~\\(0.0)/~ ... oops\n");
 	if(vector<20){
 		printf("exception: ");
-		printf("%s",interrupt_msg_mapper[vector].name);
+		printf("%s\n",interrupt_msg_mapper[vector].name);
 	}else if (vector<32){
-		printf("exception vector: %x",vector);
+		printf("exception vector: %x\n",vector);
 	}else{
-		printf("exception vector: %x",vector);
-		printf("invalid exception vector??");
+		printf("exception vector: %x\n",vector);
+		printf("invalid exception vector??\n");
 	}
 	
-	while(1);
+	halt(255);
 }
 
 /* 
@@ -141,10 +141,17 @@ uint32_t halt(uint8_t status){
  */
 uint32_t execute(const uint8_t* command){
     // Check executable
+	
     uint8_t copy_cmd[strlen((int8_t *)command)+1];
     copy_cmd[strlen((int8_t *)command)] = '\0';
     strncpy((int8_t *)copy_cmd, (int8_t *)command, strlen((int8_t *)command));
-    int32_t start_of_prog = check_executable(copy_cmd);
+	
+	//parse the executable name and arguments from the command
+	int8_t parsed_executable[33];
+	int8_t parsed_arguments[128];
+	uint32_t arg_count = parse_arguments((char*)copy_cmd, (char*)parsed_executable,(char*) parsed_arguments);
+	
+    int32_t start_of_prog = check_executable((uint8_t *)parsed_executable);
     if (start_of_prog < 0) {
         return -1; 
     }
@@ -163,6 +170,7 @@ uint32_t execute(const uint8_t* command){
     pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
     setup_pcb(pcb_self, avail_process, parent);
+	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
     // Setup TSS
     tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
     tss.ss0 = KERNEL_DS;
@@ -223,7 +231,7 @@ uint32_t open(const uint8_t* filename){
         file_desc->inode = -1;
     }
     else {
-        file_open(filename);
+        open_res = file_open(filename);
         if (open_res < 0) {
             return -1;
         }
@@ -250,7 +258,13 @@ uint32_t close(uint32_t fd){
 	return cur_pcb->fd[fd].file_ops->close(fd);
 }
 uint32_t getargs(uint8_t* buf, uint32_t nbytes){
-	putc('7');
+	pcb_t *cur_pcb = get_pcb();
+	int8_t* arguments = cur_pcb->args;
+	if(buf == NULL || nbytes < strlen(arguments)+1){
+		return -1;
+	}
+	strncpy((char*)buf, (char*)arguments, strlen(arguments));
+	buf[strlen(arguments)] = '\0';
 	return 0;
 }
 uint32_t vidmap(uint8_t** screen_start){

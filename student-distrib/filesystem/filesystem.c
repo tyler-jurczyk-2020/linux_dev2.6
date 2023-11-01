@@ -45,8 +45,9 @@ int32_t read_dentry_by_name(const uint8_t *fname, dentry_t *dentry) {
     unsigned int i;
     // Iterate over all dir_entries and find the name through string comparison
     for(i=0; i<fs.boot->dir_count; i++) {
-        uint32_t check_len = strlen((const int8_t *)fname);
-        int cmp = strncmp((int8_t *)fname, fs.boot->dir_entries[i].filename, check_len);
+        //uint32_t check_len = strlen((const int8_t *)fname);
+		
+        int cmp = strncmp((int8_t *)fname, fs.boot->dir_entries[i].filename, FILENAME_LEN);
         if (cmp == 0) {
             return read_dentry_by_index(i, dentry);
         }
