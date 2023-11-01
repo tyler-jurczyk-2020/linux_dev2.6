@@ -87,15 +87,15 @@ void exception_handler(unsigned long vector, unsigned long flags, register_struc
 	printf("exception received... ~\\(0.0)/~ ... oops\n");
 	if(vector<20){
 		printf("exception: ");
-		printf("%s",interrupt_msg_mapper[vector].name);
+		printf("%s\n",interrupt_msg_mapper[vector].name);
 	}else if (vector<32){
-		printf("exception vector: %x",vector);
+		printf("exception vector: %x\n",vector);
 	}else{
-		printf("exception vector: %x",vector);
-		printf("invalid exception vector??");
+		printf("exception vector: %x\n",vector);
+		printf("invalid exception vector??\n");
 	}
 	
-	while(1);
+	halt(255);
 }
 
 /* 
@@ -151,7 +151,7 @@ uint32_t execute(const uint8_t* command){
 	int8_t parsed_arguments[128];
 	uint32_t arg_count = parse_arguments((char*)copy_cmd, (char*)parsed_executable,(char*) parsed_arguments);
 	
-    int32_t start_of_prog = check_executable(parsed_executable);
+    int32_t start_of_prog = check_executable((uint8_t *)parsed_executable);
     if (start_of_prog < 0) {
         return -1; 
     }

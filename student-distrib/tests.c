@@ -126,7 +126,7 @@ int rtc_test(){
 		for (req = 2; req <= 1024; req*=2){
 			printf("frequence: %d  ", req);
 			buf = req;
-			rtc_write(0, &buf, 4);
+			rtc_write(0, (&buf), 4);
 			for (i = 0; i < 2*req; i++){
 				rtc_read(0, buf, req); 
 				printf("1");

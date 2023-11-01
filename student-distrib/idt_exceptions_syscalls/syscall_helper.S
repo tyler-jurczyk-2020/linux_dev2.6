@@ -62,6 +62,7 @@ halt_process:
 	#set return val
 	andl $0x000000FF, %EAX;
     movb 4(%esp), %al
+	movsx %al,%eax
 	#reset base ptr
 	movl 8(%esp),%ebp
 	leave
@@ -83,3 +84,6 @@ flush_tlbs:
 	movl	%eax,%cr3
 	leave	
 	ret
+	
+
+
