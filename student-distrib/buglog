@@ -63,6 +63,6 @@ page fault when trying to return: forgot to flush TLBS
 
 RWOC:
 Function jump table in assembly was not getting setup in memory correctly, moved it to c
-
+When opening a file, it sets available to 0, but doesn't reset it to 1 if open fails
 CHECKPOINT 4:
 CHECKPOINT 5:
