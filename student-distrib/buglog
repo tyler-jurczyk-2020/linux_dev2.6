@@ -49,5 +49,20 @@ P: Indexing into a specific spot in the datablock very far off
 S: Needed to access the bytes member of the datablock struct to correctly access the starting byte of the read.
 
 CHECKPOINT 3:
+
+EXECUTE:
+Double cast while allocating for pcb caused pointer arithmetic to be wrong and pcb was placed in wrong spot
+When resetting IF, didn’t use $ before 0x200 causing flags to be messed up
+Incorrect parameters being passed to function: forgot to set the ss before iret from execute
+read_dentry_by_name: allowing things like "shello" to execute as it was comparing to the wrong length
+
+HALT:
+Trying to jump to the end of execute and iret did not work as when halting you're in a different kernel stack than executing
+solution: add the parent's ebp when executing current process to current process' pcb, pass it in to argument to halt assembly, take it, leave return
+page fault when trying to return: forgot to flush TLBS
+
+RWOC:
+Function jump table in assembly was not getting setup in memory correctly, moved it to c
+
 CHECKPOINT 4:
 CHECKPOINT 5:
