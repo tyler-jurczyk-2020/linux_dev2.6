@@ -51,5 +51,6 @@ extern pcb_t *get_pcb();
 file_descriptor_t *get_fd(int32_t fd);
 
 int32_t get_avail_fd();
+void make_available_fd(int32_t fd);
 
 #endif

@@ -226,16 +226,19 @@ uint32_t open(const uint8_t* filename){
     // Setup pcb entry
     int32_t fd_idx = get_avail_fd();
 	if(fd_idx<0){
+		make_available_fd(fd_idx);
 		return -1;
 	}
     file_descriptor_t *file_desc = get_fd(fd_idx);
     if (file_desc == NULL) {
+		make_available_fd(fd_idx);
         return -1; 
     }
     int32_t open_res;
     if (!strncmp((const int8_t *)filename, (const int8_t *)"rtc", 3)) {
         open_res = rtc_open((const uint8_t *)"rtc"); 
         if (open_res != 0) {
+			make_available_fd(fd_idx);
             return -1;
         }
         file_desc->file_ops = &rtc_table;
@@ -244,6 +247,7 @@ uint32_t open(const uint8_t* filename){
     else if (!strncmp((const int8_t *)filename, (const int8_t *)".", 1)) {
         open_res = dir_open((const uint8_t *)"."); 
         if (open_res != 0) {
+			make_available_fd(fd_idx);
             return -1;
         }
         file_desc->file_ops = &directory_table;
@@ -252,6 +256,7 @@ uint32_t open(const uint8_t* filename){
     else {
         open_res = file_open(filename);
         if (open_res < 0) {
+			make_available_fd(fd_idx);
             return -1;
         }
         file_desc->file_ops = &file_table;

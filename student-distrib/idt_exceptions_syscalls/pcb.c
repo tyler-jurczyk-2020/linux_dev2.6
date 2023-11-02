@@ -87,6 +87,15 @@ int32_t get_avail_fd() {
     }
     return -1;
 }
+/* re_open_fd
+ * INPUTS: fd to reopen
+ * OUTPUTS: NONE
+ * SideEFFECTS: sets the fd to available
+ */
+void make_available_fd(int32_t fd){
+	pcb_t *pcb = get_pcb();
+	pcb->available[fd] = 1;
+}
 
 /*
  * uint32_t parse_arguments
