@@ -187,7 +187,15 @@ uint32_t execute(const uint8_t* command){
  * Side Effects: none
  */
 uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
+	//check if fd is valid number
+	if(fd > 7){
+		return -1;
+	}
     pcb_t *cur_pcb = get_pcb();
+	//check if the file is in use/opened
+	if(cur_pcb->available[fd] == 1){
+		return -1;
+	}
 	return cur_pcb->fd[fd].file_ops->read(fd, buf, nbytes);
 }
 /*
@@ -197,7 +205,15 @@ uint32_t read(uint32_t fd, void* buf, uint32_t nbytes){
  * Side Effects: none
  */
 uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
+	//check if fd is valid number
+	if(fd > 7){
+		return -1;
+	}
     pcb_t *cur_pcb = get_pcb();
+	//check if the file is in use/opened
+	if(cur_pcb->available[fd] == 1){
+		return -1;
+	}
     return cur_pcb->fd[fd].file_ops->write(fd, buf, nbytes);
 }
 /*
@@ -209,6 +225,9 @@ uint32_t write(uint32_t fd, const void* buf, uint32_t nbytes){
 uint32_t open(const uint8_t* filename){
     // Setup pcb entry
     int32_t fd_idx = get_avail_fd();
+	if(fd_idx<0){
+		return -1;
+	}
     file_descriptor_t *file_desc = get_fd(fd_idx);
     if (file_desc == NULL) {
         return -1; 
@@ -254,6 +273,10 @@ uint32_t close(uint32_t fd){
         return -1; 
     }
     pcb_t *cur_pcb = get_pcb();
+	//check if the file is in use/opened
+	if(cur_pcb->available[fd] == 1){
+		return -1;
+	}
     cur_pcb->available[fd] = 1;
 	return cur_pcb->fd[fd].file_ops->close(fd);
 }
