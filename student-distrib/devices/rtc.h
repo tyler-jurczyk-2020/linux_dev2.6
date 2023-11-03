@@ -20,6 +20,13 @@
 
 volatile int interrupt; //interrupt flag
 
+typedef struct rtc_v{
+    uint32_t rate;
+    uint32_t base_f;
+    uint32_t frequency;
+    uint32_t count;
+} rtc_v;
+
 
 /* initializing RTC */
 void rtc_init();
@@ -42,4 +49,6 @@ int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes);
 /* Close specified file descriptor */
 int32_t rtc_close (int32_t fd);
 
-#endif 
+void write_portA(uint8_t data);
+
+#endif

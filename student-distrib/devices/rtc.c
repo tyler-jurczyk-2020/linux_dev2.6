@@ -2,7 +2,6 @@
 #include "../lib.h"
 
  																	/******* MP3.1 Functions *******/
-
 /* rtc_init
  * DESCRIPTION: Turning on periodic interrupt and setting frequency
  * INPUTS: none
@@ -10,6 +9,8 @@
  * RETURN VALUE: none
  * SIDE EFFECT: none
  */
+volatile rtc_v rtc_v_info;
+volatile uint8_t rtc_v_enable = 0;
 
 void rtc_init() {
 	interrupt = 0; //no interrupt occured
@@ -18,9 +19,15 @@ void rtc_init() {
 	outb(Register_B, PORT_index); //setting index
 	outb(prev | RTC_BIT, PORT_RW); // writing previous value with 0x40
 	
+	if (rtc_v_enable){
+		rtc_v_info.rate = 3;
+		rtc_v_info.base_f = 8192;
+		rtc_v_info.frequency = 1024;
+		rtc_v_info.count = rtc_v_info.base_f / rtc_v_info.frequency;
+		
+	}
 	//enable interrupts
 	enable_irq(IRQ8);
-
 	//rtc_interrupt_rate(2); //setting interrupt rate, 1024Hz is default value of output divider frequency
 } 
 
@@ -208,25 +215,27 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	if ( buf == NULL) {
 		return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	}
-
-    // Get rate out of buffer
-	uint8_t r[nbytes];
-    memcpy(r, buf, nbytes);
-    uint32_t rate = 0;
-    uint32_t i;
-    for(i=0; i<nbytes; i++){
-        rate |= (uint32_t)r[i] << 8*i; 
-    }
-
-	int new_rate = rtc_interrupt_rate(rate);
 	
+    // Get rate out of buffer
+	// uint8_t r[nbytes];
+    // memcpy(r, buf, nbytes);
+    //uint32_t rate = 0;
+    // uint32_t i;
+    // for(i=0; i<nbytes; i++){
+    //     rate |= (uint32_t)r[i] << 8*i; 
+    // }
+
+	uint32_t rate =  *(uint32_t*)buf;
+	int new_rate = rtc_interrupt_rate(rate);
+	int flag;
 	new_rate &= rate_value; 
-
-	outb(Register_A, PORT_index); //set index to reg A
-	char prev = inb(PORT_RW); //initial value of reg A
-	outb(Register_A, PORT_RW); //reset index to A
-	outb((prev & 0xF0) | new_rate, PORT_RW); //write rate to A, rate is bottom 4 bits
-
+	// cli_and_save(flag);
+	// outb(Register_A, PORT_index); //set index to reg A
+	// char prev = inb(PORT_RW); //initial value of reg A
+	// outb(Register_A, PORT_RW); //reset index to A
+	// outb((prev & 0xF0) | new_rate, PORT_RW); //write rate to A, rate is bottom 4 bits
+	// restore_flags(flag);
+	write_portA((uint8_t)new_rate);
 	return 0; //Success 
  }
 
@@ -247,4 +256,16 @@ int32_t rtc_close (int32_t fd) {
 	//ERROR CHECKING
 
 	return 0;
+}
+
+void write_portA(uint8_t data){
+	int flag;
+	cli_and_save(flag);
+
+	outb(Register_A, PORT_index);
+	uint8_t prev = inb(PORT_RW);
+	outb(Register_A, PORT_RW);
+	outb((prev & 0xF0) | data, PORT_RW);
+
+	restore_flags(flag);
 }
