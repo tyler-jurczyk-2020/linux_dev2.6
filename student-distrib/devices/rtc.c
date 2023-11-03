@@ -10,7 +10,7 @@
  * SIDE EFFECT: none
  */
 volatile rtc_v rtc_v_info;
-volatile uint8_t rtc_v_enable = 0;
+volatile uint8_t rtc_v_enable = 1;
 
 void rtc_init() {
 	interrupt = 0; //no interrupt occured
@@ -19,13 +19,6 @@ void rtc_init() {
 	outb(Register_B, PORT_index); //setting index
 	outb(prev | RTC_BIT, PORT_RW); // writing previous value with 0x40
 	
-	if (rtc_v_enable){
-		rtc_v_info.rate = 3;
-		rtc_v_info.base_f = 8192;
-		rtc_v_info.frequency = 1024;
-		rtc_v_info.count = rtc_v_info.base_f / rtc_v_info.frequency;
-		
-	}
 	//enable interrupts
 	enable_irq(IRQ8);
 	//rtc_interrupt_rate(2); //setting interrupt rate, 1024Hz is default value of output divider frequency
@@ -95,9 +88,17 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	inb(PORT_RW); //clearing the contents
 	//test_interrupts();
 	send_eoi(8);
-
-	interrupt = 1; //interrupt occured
-
+	if (rtc_v_enable){
+		rtc_v_info.count_down--;
+		if (rtc_v_info.count_down == 0){
+			rtc_v_info.count_down = rtc_v_info.count_num;
+			interrupt = 1; //interrupt occured
+		}
+	}
+	else{
+		interrupt = 1; //interrupt occured
+	}
+	
 	sti();
 	
  }
@@ -123,15 +124,25 @@ int rtc_interrupt_rate(uint32_t frequency) {
 
 	//ERROR CHECKING
 	rtc_init();
-
-	//rate *= 2
-	int rate = LOW_FREQ; //Lowest possible frequency, starting with low frequency 
-	rate &= rate_value; //rate above 2 and not over 15
+	if (rtc_v_enable){
+		rtc_v_info.rate = 3;
+		rtc_v_info.base_f = 8192;
+		rtc_v_info.frequency = 2;
+		rtc_v_info.count_num = rtc_v_info.base_f / rtc_v_info.frequency;
+		rtc_v_info.count_down = rtc_v_info.count_num;
+		write_portA((uint8_t)rtc_v_info.rate);
+	}
+	else{
+		//rate *= 2
+		int rate = LOW_FREQ; //Lowest possible frequency, starting with low frequency 
+		rate &= rate_value; //rate above 2 and not over 15
 	
-	outb(Register_A, PORT_index); //set index to reg A
-	char prev = inb(PORT_RW); //initial value of reg A
-	outb(Register_A, PORT_RW); //reset index to A
-	outb( (prev & 0xF0) | rate, PORT_RW); //write rate to A, rate is bottom 4 bits
+		outb(Register_A, PORT_index); //set index to reg A
+		char prev = inb(PORT_RW); //initial value of reg A
+		outb(Register_A, PORT_RW); //reset index to A
+		outb( (prev & 0xF0) | rate, PORT_RW); //write rate to A, rate is bottom 4 bits
+	}
+	
 
 	return 0; // Success
 
@@ -226,16 +237,19 @@ int rtc_interrupt_rate(uint32_t frequency) {
     // }
 
 	uint32_t rate =  *(uint32_t*)buf;
-	int new_rate = rtc_interrupt_rate(rate);
-	int flag;
-	new_rate &= rate_value; 
-	// cli_and_save(flag);
-	// outb(Register_A, PORT_index); //set index to reg A
-	// char prev = inb(PORT_RW); //initial value of reg A
-	// outb(Register_A, PORT_RW); //reset index to A
-	// outb((prev & 0xF0) | new_rate, PORT_RW); //write rate to A, rate is bottom 4 bits
-	// restore_flags(flag);
-	write_portA((uint8_t)new_rate);
+
+	if (rtc_v_enable){
+		rtc_v_info.frequency = rate;
+		rtc_v_info.count_num = rtc_v_info.base_f / rtc_v_info.frequency;
+		rtc_v_info.count_down = rtc_v_info.count_num;
+	}
+	else{
+		int new_rate = rtc_interrupt_rate(rate);
+		int flag;
+		new_rate &= rate_value; 
+		write_portA((uint8_t)new_rate);
+	}
+
 	return 0; //Success 
  }
 
