@@ -20,13 +20,13 @@
 
 volatile int interrupt; //interrupt flag
 
-typedef struct rtc_v{
-    uint32_t rate;
-    uint32_t base_f;
-    uint32_t frequency;
-    uint32_t count_num;
-    uint32_t count_down;
-} rtc_v;
+// typedef struct rtc_v{
+//     uint32_t rate;
+//     uint32_t base_f;
+//     uint32_t frequency;
+//     uint32_t count_num;
+//     //uint32_t count_down;
+// } rtc_v;
 
 
 /* initializing RTC */
