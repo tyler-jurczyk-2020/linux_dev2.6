@@ -10,7 +10,7 @@
  * SIDE EFFECT: none
  */
 // volatile rtc_v rtc_v_info;
-static uint8_t rtc_v_enable = 1;
+volatile uint8_t rtc_v_enable = 1;
 
 volatile uint32_t v_rate;
 volatile uint32_t base_f;
@@ -102,6 +102,11 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		}
 	}
 	else{
+		// count_down--;
+		// if (count_down == 0){
+		// 	count_down = count_num;
+		// 	interrupt = 1; //interrupt occured
+		// }
 		interrupt = 1; //interrupt occured
 	}
 	send_eoi(8);
@@ -131,8 +136,8 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	//ERROR CHECKING
 	rtc_init();
 	if (rtc_v_enable == 1){
-		v_rate = 6;
-		base_f = 1024;
+		v_rate = 7;
+		base_f = 512;
 		frequency = 2;
 		count_num = base_f / frequency;
 		count_down = count_num;
@@ -143,6 +148,12 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		int rate = 15; //Lowest possible frequency, starting with low frequency 
 		rate &= rate_value; //rate above 2 and not over 15
 	
+		// v_rate = 6;
+		// base_f = 1024;
+		// frequency = 2;
+		// count_num = base_f / frequency;
+		// count_down = count_num;
+
 		write_portA((uint8_t)rate);
 	}
 	
@@ -241,13 +252,20 @@ int rtc_interrupt_rate(uint32_t frequency) {
 
 	uint32_t rate =  *(uint32_t*)buf;
 
+	if (rate == 1024){
+		rtc_v_enable = 0;
+	}
+	else{
+		rtc_v_enable = 1;
+	}
+
 	if (rtc_v_enable == 1){
-		// int flag;
-		// cli_and_save(flag);
+		int flag;
+		cli_and_save(flag);
 		frequency = rate;
 		count_num = base_f / frequency;
 		count_down = count_num;
-		// restore_flags(flag);
+		restore_flags(flag);
 		// write_portA((uint8_t)rate);
 	}
 	else{
