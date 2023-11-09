@@ -295,7 +295,7 @@ void vid_scroll_up(){
 	int i;
 	if(video_mem + (NUM_COLS*(NUM_ROWS+1)*2)>= (char*)0xB900){//end of vmem page
 		memcpy((void*)VIDEO, (video_mem+NUM_COLS*2), NUM_COLS*(NUM_ROWS-1)*2);
-		video_mem = VIDEO;
+		video_mem = (char*)VIDEO;
 	}else{
 		video_mem += NUM_COLS<<1;
 	}

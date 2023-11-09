@@ -18,7 +18,20 @@
 #define LOW_FREQ 2 //lowest possible frequency that RTC can run at (Hz)
 #define HIGH_FREQ 1024 //highest possible frequency that our kernel RTC should run at (Hz) [Max typically 8192 Hz]
 
+#define RTC_V_RATE 7
+#define RTC_HIGHEST_RATE 6
+#define RTC_V_BASE_F 512
+
+
 volatile int interrupt; //interrupt flag
+
+// typedef struct rtc_v{
+//     uint32_t rate;
+//     uint32_t base_f;
+//     uint32_t frequency;
+//     uint32_t count_num;
+//     //uint32_t count_down;
+// } rtc_v;
 
 
 /* initializing RTC */
@@ -42,4 +55,7 @@ int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes);
 /* Close specified file descriptor */
 int32_t rtc_close (int32_t fd);
 
-#endif 
+/* Write to last 4 bit on reg A*/
+void write_portA(uint8_t data);
+
+#endif

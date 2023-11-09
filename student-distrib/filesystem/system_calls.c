@@ -81,9 +81,32 @@ int32_t dir_write(int32_t fd, const void *buf, int32_t nbytes) {
  * Return Value: Number of read bytes
  * Function: Reads the names of the files in the current directory */
 int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
-    uint32_t bytes_to_copy = nbytes;
     file_descriptor_t *file_desc = get_fd(fd);
     uint32_t i = file_desc->file_pos;
+	uint32_t len_to_copy;
+	dentry_t dentry; 
+	//if last dir entry read, return 0 bytes read
+	if(i>=fs.boot->dir_count){
+		return 0;
+	}
+	//try to read dir
+	int32_t res = read_dentry_by_index(i, &dentry); 
+    if (res < 0) {
+        return res;
+    }
+	//figure out how much to copy
+	if (dentry.filename[FILENAME_LEN-1] != '\0') {
+            len_to_copy = (nbytes >= FILENAME_LEN) ? FILENAME_LEN : nbytes;     
+    }else{
+            len_to_copy = (nbytes >= strlen(dentry.filename)) ? strlen(dentry.filename) : nbytes;
+    }
+	//copy
+	strncpy(buf, dentry.filename, len_to_copy);
+	//update dir index
+	file_desc->file_pos = i+1;
+	//return how much was copied
+	return len_to_copy;
+	/*  no longer used keep for reference
     // Read all the dir_entries since filesystem is flat
     for(; i<fs.boot->dir_count; i++) {
         dentry_t dentry; 
@@ -120,6 +143,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
     // Update offset
     file_desc->file_pos = i;
     return nbytes - bytes_to_copy; 
+	*/
 }
 
 /* int32_t check_executable();
