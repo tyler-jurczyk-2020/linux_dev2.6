@@ -303,10 +303,8 @@ uint32_t vidmap(uint8_t** screen_start){
 	return 0;
 }
 uint32_t set_handler(uint32_t signum, void* handler_address){
-	putc('9');
-	return 0;
+	return -1;
 }
 uint32_t sigreturn(void){
-	putc('A');
-	return 0;
+	return -1;
 }

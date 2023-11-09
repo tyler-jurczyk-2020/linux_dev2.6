@@ -106,7 +106,7 @@ int32_t dir_read(int32_t fd, void *buf, int32_t nbytes) {
 	file_desc->file_pos = i+1;
 	//return how much was copied
 	return len_to_copy;
-	/*
+	/*  no longer used keep for reference
     // Read all the dir_entries since filesystem is flat
     for(; i<fs.boot->dir_count; i++) {
         dentry_t dentry; 

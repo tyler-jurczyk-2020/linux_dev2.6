@@ -55,6 +55,7 @@ int32_t rtc_write (int32_t fd, const void* buf, int32_t nbytes);
 /* Close specified file descriptor */
 int32_t rtc_close (int32_t fd);
 
+/* Write to last 4 bit on reg A*/
 void write_portA(uint8_t data);
 
 #endif
