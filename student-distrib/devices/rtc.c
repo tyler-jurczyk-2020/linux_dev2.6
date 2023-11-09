@@ -10,7 +10,7 @@
  * SIDE EFFECT: none
  */
 // volatile rtc_v rtc_v_info;
-volatile uint8_t rtc_v_enable = 1;
+volatile uint8_t rtc_v_enable;
 
 volatile uint32_t v_rate;
 volatile uint32_t base_f;
@@ -24,7 +24,7 @@ void rtc_init() {
 	char prev = inb(PORT_RW); //reading current value of B
 	outb(Register_B, PORT_index); //setting index
 	outb(prev | RTC_BIT, PORT_RW); // writing previous value with 0x40
-	
+	rtc_v_enable = 1;
 	//enable interrupts
 	enable_irq(IRQ8);
 	//rtc_interrupt_rate(2); //setting interrupt rate, 1024Hz is default value of output divider frequency
@@ -38,7 +38,7 @@ void rtc_init() {
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
 int rtc_interrupt_rate(uint32_t frequency) {
-	int updated_rate = 6;
+	int updated_rate = RTC_HIGHEST_RATE;
 
 	//ERROR CHECKING
 	if (frequency < LOW_FREQ || frequency > HIGH_FREQ) {
@@ -136,9 +136,9 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	//ERROR CHECKING
 	rtc_init();
 	if (rtc_v_enable == 1){
-		v_rate = 7;
-		base_f = 512;
-		frequency = 2;
+		v_rate = RTC_V_RATE;
+		base_f = RTC_V_BASE_F;
+		frequency = 2;				// bu default set to 2
 		count_num = base_f / frequency;
 		count_down = count_num;
 		write_portA((uint8_t)v_rate);
@@ -236,8 +236,8 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	*/
 
 	//ERROR CHECKING
-	// nbytes != 4 ||
-	if ( buf == NULL) {
+	//  ||
+	if ( buf == NULL || nbytes != 4) {
 		return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	}
 	
@@ -252,8 +252,12 @@ int rtc_interrupt_rate(uint32_t frequency) {
 
 	uint32_t rate =  *(uint32_t*)buf;
 
-	if (rate == 1024){
+	if (rate > HIGH_FREQ){
+		return -1;
+	}
+	else if (rate > RTC_V_BASE_F && rate <= HIGH_FREQ){
 		rtc_v_enable = 0;
+		rate = HIGH_FREQ;
 	}
 	else{
 		rtc_v_enable = 1;

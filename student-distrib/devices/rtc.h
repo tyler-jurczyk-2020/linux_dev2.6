@@ -18,6 +18,11 @@
 #define LOW_FREQ 2 //lowest possible frequency that RTC can run at (Hz)
 #define HIGH_FREQ 1024 //highest possible frequency that our kernel RTC should run at (Hz) [Max typically 8192 Hz]
 
+#define RTC_V_RATE 7
+#define RTC_HIGHEST_RATE 6
+#define RTC_V_BASE_F 512
+
+
 volatile int interrupt; //interrupt flag
 
 // typedef struct rtc_v{
