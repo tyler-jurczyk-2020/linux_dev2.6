@@ -70,6 +70,15 @@ P: pingpong unable to change the frequency
 S: argument should be accepted from buf instead of nbyte. Changed the protocol and it works.
 
 CHECKPOINT 4:
+
+OPEN:
+When trying to open a file, if it didn't work we never reset the available status in the fd array
+
+Dir Read:
+read more than one dir at a time, tried to fill the buffer with all dir names consecutively instead of stopping after 1
+
+Certain drivers had the wrong return values for their open/close/read/write, went through and fixed all that up
+
 RTC:
 P: Virtualization issues when handling frequency greater than 512 and less than 1024. Problem do to ~1024Hz being out of sync, not beign able to handle interrupts in one sec.
 S: When freq is 1024, we manually set the rate as to avoid this issue. Now RTC frequency changes appropriately 
