@@ -1,4 +1,6 @@
 #include "i8259.h"
+#include "pit.h"
+#include "../lib.h"
 
 void init_pit(){
     enable_irq(IRQ0);
@@ -7,6 +9,8 @@ void init_pit(){
 
 void pit_handler(){
     /* need to be done */
+    printf("PIT! ");
+    send_eoi(IRQ0);
 }
 
 void timer_set(int freq){

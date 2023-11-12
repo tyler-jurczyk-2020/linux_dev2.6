@@ -11,6 +11,6 @@
 #define RUNNING_F_L     20
 #define RUNNING_F_H     100
 
-void init_pit;
-void pit_handler;
+extern void init_pit();
+extern void pit_handler();
 void timer_set(int freq);

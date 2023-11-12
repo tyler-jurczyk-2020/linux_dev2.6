@@ -5,6 +5,7 @@
 #include "devices/keyboard.h"
 #include "devices/rtc.h"
 #include "filesystem/fs_tests.h"
+#include "devices/pit.h"
 
 #define PASS 1
 #define FAIL 0
@@ -151,7 +152,11 @@ int syscall_jump(){
 }
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
-
+int pit_test(){
+	TEST_HEADER;
+	init_pit();
+	return PASS;
+}
 
 
 /* Test suite entry point */
@@ -177,7 +182,7 @@ void launch_tests(){
 
 	//TEST_OUTPUT("terminal_test", terminal_test());
 	//TEST_OUTPUT("syscall_jump", syscall_jump());
-    TEST_OUTPUT("RTC_test", rtc_test())
+    //TEST_OUTPUT("RTC_test", rtc_test())
     // Test the filesystem
     //test_large_file_single();
     //test_large_file_multi();
@@ -185,4 +190,6 @@ void launch_tests(){
     //test_dir_read_single();
     //test_dir_read_multi();
     //execute((const uint8_t *)"shell");
+	pit_test();
+	
     }
