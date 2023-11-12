@@ -10,7 +10,7 @@ int8_t find_terminal_id(uint8_t requested){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1));
-		if(traverse->terminal_num==requested){
+		if(traverse->terminal_info.terminal_num==requested){
 			pcb_num = i;
 		}
 	}

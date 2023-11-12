@@ -358,6 +358,7 @@ int32_t switch_terminal(int8_t requested_terminal){
 	uint8_t pcb_num = find_terminal_id(requested_terminal);
 	if(pcb_num < 0){
 		return -1;
+		
 	}
 
 	/*

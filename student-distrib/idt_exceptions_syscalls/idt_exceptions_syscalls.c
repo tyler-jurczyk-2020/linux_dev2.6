@@ -169,6 +169,11 @@ uint32_t execute(const uint8_t* command){
     // Setup child pcb
     pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
+	if(parent){
+		pcb_self->terminal_info.terminal_num = parent->terminal_info.terminal_num;
+		pcb_self->terminal_info.user_page_addr = parent->terminal_info.user_page_addr;
+		pcb_self->terminal_info.fake_page_addr = parent->terminal_info.fake_page_addr;
+	}
     setup_pcb(pcb_self, avail_process, parent);
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
     // Setup TSS
