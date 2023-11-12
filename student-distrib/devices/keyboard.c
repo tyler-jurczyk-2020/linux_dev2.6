@@ -343,4 +343,43 @@ int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes){
 	return 0;
 }
 
+/*
+switch_terminal
+description: Attempts to switch terminals/create new terminal if there does not exist one
+inputs: requested terminal number
+outputs: success on successful switch
+side effects: allocates new PCB, switches paging as well
+*/
+int32_t switch_terminal(int8_t requested_terminal){
+	/*
+	step through PCBs to determine if a terminal with the requested # exists
+	
+	If so{
+		switch vmem
+	}
+	If not{
+		Attempt to allocate a new kernel stack/process
+		new->pcb->terminal_num = requested_terminal
+		new->pcb->vmem = new page of vmem
+		
+		switch vmem 
+		
+		setup rest of pcb like executing shell
+		setup exec stack + push registers to current->pcb
+		
+		execute
+	} 
+	
+	switch vmem:
+	point current vmem to current process' fake idx
+	copy real vmem to current_process' fake idx
+	copy requested fake vmem to real vmem
+	point requested vmem to real vmem
+	
+	
+	
+	
+	
+	*/
+}
 
