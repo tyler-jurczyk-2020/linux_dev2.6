@@ -299,7 +299,7 @@ uint32_t vidmap(uint8_t** screen_start){
     if ((int32_t) screen_start < PROGRAM_ADDR || (int32_t) screen_start > PROGRAM_ADDR + FOUR_MB) {
         return -1; 
     }
-    *screen_start = (uint8_t *)VMEM_ADDR;
+    *screen_start = (uint8_t *)VMEM_ADDR;//TODO:(get_pcb()->terminal_info.user_page_addr);
 	return 0;
 }
 uint32_t set_handler(uint32_t signum, void* handler_address){

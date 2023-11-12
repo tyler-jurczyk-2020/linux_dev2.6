@@ -3,6 +3,7 @@
 #include "../lib.h"
 #include "i8259.h"
 #include "../x86_desc.h"
+#include "../idt_exceptions_syscalls/pcb.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
 static char scan_code_set_1_norm[59] = {	// 59 characters for what we care
@@ -353,33 +354,19 @@ side effects: allocates new PCB, switches paging as well
 int32_t switch_terminal(int8_t requested_terminal){
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
-	
-	If so{
-		switch vmem
-	}
-	If not{
-		Attempt to allocate a new kernel stack/process
-		new->pcb->terminal_num = requested_terminal
-		new->pcb->vmem = new page of vmem
-		
-		switch vmem 
-		
-		setup rest of pcb like executing shell
-		setup exec stack + push registers to current->pcb
-		
-		execute
-	} 
-	
-	switch vmem:
-	point current vmem to current process' fake idx
-	copy real vmem to current_process' fake idx
-	copy requested fake vmem to real vmem
-	point requested vmem to real vmem
-	
-	
-	
-	
-	
 	*/
+	uint8_t pcb_num = find_terminal_id(requested_terminal);
+	if(pcb_num < 0){
+		return -1;
+	}
+
+	/*
+	switch vmem:
+	point current vmem page to current process' fake vmem page
+	copy real(physical) video mem to current_process' fake vmem page
+	copy requested fake vmem to real vmem (physical)
+	point requested vmem page to real vmem
+	*/
+	
 }
 

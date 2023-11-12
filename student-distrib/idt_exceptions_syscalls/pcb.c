@@ -4,6 +4,19 @@
 
 uint8_t process_ids[MAX_PROCESSES] = {0, 0, 0, 0, 0, 0};
 
+
+int8_t find_terminal_id(uint8_t requested){
+	int8_t pcb_num = -1;
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1));
+		if(traverse->terminal_num==requested){
+			pcb_num = i;
+		}
+	}
+	return pcb_num;
+}
+
 /* int8_t get_process_id();
  * Inputs: none
  * Return Value: -1 if faliure, else the index of next available process id

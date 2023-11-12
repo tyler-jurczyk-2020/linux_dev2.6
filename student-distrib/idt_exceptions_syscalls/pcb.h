@@ -30,13 +30,25 @@ typedef struct file_descriptor_t {
 
 typedef struct pcb_t {
     uint32_t process_id;
-    struct pcb_t *parent;
+    
+	struct pcb_t *parent;
+	struct terminal_t terminal_info;
+	
+	uint32_t schedule_esp;
+	uint32_t schedule_ebp;
+	
     uint32_t esp0;
 	uint32_t halt_ebp; //to be set when this process is executed, keeps track of where to return
 	int8_t args[128];
     uint32_t available[8];
     file_descriptor_t fd[8]; 
 } pcb_t;
+
+typedef struct terminal_t{
+	uint8_t terminal_num;
+	uint32_t user_page_addr;
+	uint32_t fake_page_addr;
+} terminal_t;
 
 uint8_t get_process_id();
 
