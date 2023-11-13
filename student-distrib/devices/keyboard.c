@@ -369,16 +369,30 @@ inputs: requested terminal number
 outputs: success on successful switch
 side effects: allocates new PCB, switches paging as well
 */
-int32_t switch_terminal(int8_t requested_terminal){
+int32_t switch_terminal(int8_t requested_terminal_num){
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
-	uint8_t pcb_num = find_terminal_id(requested_terminal);
-	if(pcb_num < 0){
+	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
+	if(requested_pid < 0){
 		return -1;
 		
 	}
-
+	
+	int8_t onscreen_terminal_pid = find_onscreen_terminal_pid();
+	if(onscreen_terminal_pid < 0){
+		return -1;
+	}
+	pcb_t* active_terminal_pcb = (pcb_t*)get_pcb_ptr(onscreen_terminal_pid);
+	
+	pcb_t* requested_pcb = (pcb_t*)get_pcb_ptr(requested_pid);
+	
+	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
+	terminal_t* requested_terminal = &(requested_pcb->terminal_info);
+	//TODO in halt/execute,
+	//	execute <= set on screen of new pcb to parent->onscreen, set parent->onscreen to false
+	//	halt    <= set on screen of parent pcb to current->onscreen, set current->onscreen to false
+	
 	/*
 	switch vmem:
 	point current vmem page to current process' fake vmem page
@@ -386,6 +400,6 @@ int32_t switch_terminal(int8_t requested_terminal){
 	copy requested fake vmem to real vmem (physical)
 	point requested vmem page to real vmem
 	*/
-	
+	return 1;
 }
 

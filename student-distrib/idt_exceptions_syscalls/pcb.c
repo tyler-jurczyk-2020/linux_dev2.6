@@ -4,17 +4,58 @@
 
 uint8_t process_ids[MAX_PROCESSES] = {0, 0, 0, 0, 0, 0};
 
-
-int8_t find_terminal_id(uint8_t requested){
-	int8_t pcb_num = -1;
+/* int8_t find_terminal_id(requested);
+ * Inputs: requested terminal
+ * Return Value: pcb index of a process in said terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_terminal_pid(uint8_t requested){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
-		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1));
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
 		if(traverse->terminal_info.terminal_num==requested){
-			pcb_num = i;
+			return i;
 		}
 	}
-	return pcb_num;
+	return -1;
+}
+
+/* int8_t find_onscreen_terminal();
+ * Inputs: none
+ * Return Value: terminal number of the onscreen terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_onscreen_terminal_num(){
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
+		if(traverse->terminal_info.is_onscreen){
+			return traverse->terminal_info.terminal_num;
+		}
+	}
+	return -1;
+}
+
+
+/* int8_t find_onscreen_terminal_id();
+ * Inputs: none
+ * Return Value: pcb index of a process with an active terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_onscreen_terminal_pid(){
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
+		if(traverse->terminal_info.is_onscreen){
+			return i;
+		}
+	}
+	return -1;
+}
+
+/* uint32_t get_pcb_ptr(pcb_id);
+ * Inputs: id of pcb to get
+ * Return Value: ptr to pcb
+ * Function: uses quick mafs to get the ptr*/
+uint32_t get_pcb_ptr(uint8_t pcb_id){
+	return (uint32_t)(EIGHT_MB - (EIGHT_KB*(pcb_id+1)));
 }
 
 /* int8_t get_process_id();

@@ -1,7 +1,7 @@
 #ifndef _PCB
 #define _PCB
 #include "../types.h"
-
+#include "../devices/keyboard.h"
 #define MAX_PROCESSES 6
 #define MAX_FILES 8
 #define EIGHT_KB 0x00002000
@@ -28,6 +28,13 @@ typedef struct file_descriptor_t {
     int32_t flags;
 } file_descriptor_t;
 
+typedef struct terminal_t{
+	uint8_t is_onscreen;
+	uint8_t terminal_num;
+	uint32_t user_page_addr;
+	uint32_t fake_page_addr;
+} terminal_t;
+
 typedef struct pcb_t {
     uint32_t process_id;
     
@@ -44,13 +51,16 @@ typedef struct pcb_t {
     file_descriptor_t fd[8]; 
 } pcb_t;
 
-typedef struct terminal_t{
-	uint8_t terminal_num;
-	uint32_t user_page_addr;
-	uint32_t fake_page_addr;
-} terminal_t;
+/* returns terminal num (0,1,or 2) */
+int8_t find_onscreen_terminal_num();
+/* returns process id of onscreen terminal (0-5) */
+int8_t find_onscreen_terminal_pid();
+/* finds process id of requested terminal */
+int8_t find_terminal_pid(uint8_t requested);
 
 uint8_t get_process_id();
+/* gets a pointer to the pcb with the inputted pid */
+uint32_t get_pcb_ptr(uint8_t pcb_id);
 
 void setup_pcb(pcb_t *pcb, uint32_t my_process_id, pcb_t *parent_pcb);
 
@@ -64,5 +74,6 @@ file_descriptor_t *get_fd(int32_t fd);
 
 int32_t get_avail_fd();
 void make_available_fd(int32_t fd);
+
 
 #endif
