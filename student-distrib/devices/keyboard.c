@@ -6,7 +6,7 @@
 #include "../idt_exceptions_syscalls/pcb.h"
 
 /*This is the tabled used to decode scan code from keyboard*/
-static char scan_code_set_1_norm[59] = {	// 59 characters for what we care
+static char scan_code_set_1_norm[62] = {	// 59 characters for what we care
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
@@ -21,10 +21,11 @@ static char scan_code_set_1_norm[59] = {	// 59 characters for what we care
     'z',  'x',  'c',  'v',
     'b',  'n',  'm',  ',',
 	'.',  '/', 0x00, 0x00,
-	0x00,  ' ', 0x00
+	0x00,  ' ', 0x00, 0x00,
+	0x00, 0x00
 }; 
 
-static char scan_code_set_1_cap[59] = {
+static char scan_code_set_1_cap[62] = {
     0x00,  ESC, '1',  '2',
     '3',  '4',  '5',  '6', 
     '7',  '8',  '9',  '0',
@@ -39,10 +40,11 @@ static char scan_code_set_1_cap[59] = {
     'Z',  'X',  'C',  'V',
     'B',  'N',  'M',  ',',
 	'.',  '/', 0x00, 0x00,
-	0x00,  ' ', 0x00
+	0x00,  ' ', 0x00, 0x00,
+	0x00, 0x00
 }; 
 
-static char scan_code_set_1_shift[59] = {
+static char scan_code_set_1_shift[62] = {
     0x00,  ESC, '!',  '@',
     '#',  '$',  '%',  '^', 
     '&',  '*',  '(',  ')',
@@ -57,10 +59,11 @@ static char scan_code_set_1_shift[59] = {
     'Z',  'X',  'C',  'V',
     'B',  'N',  'M',  '<',
 	'>',  '?', 0x00, 0x00,
-	0x00,  ' ', 0x00
+	0x00,  ' ', 0x00, 0x00,
+	0x00, 0x00
 }; 
 
-static char scan_code_set_1_shift_cap[59] = {
+static char scan_code_set_1_shift_cap[62] = {
     0x00,  ESC, '!',  '@',
     '#',  '$',  '%',  '^', 
     '&',  '*',  '(',  ')',
@@ -75,7 +78,8 @@ static char scan_code_set_1_shift_cap[59] = {
     'z',  'x',  'c',  'v',
     'b',  'n',  'm',  '<',
 	'>',  '?', 0x00, 0x00,
-	0x00,  ' ', 0x00
+	0x00,  ' ', 0x00, 0x00,
+	0x00, 0x00
 }; 
 
 keyboard_struct keyboard;
@@ -183,7 +187,7 @@ void handle_keyboard(){
 			}
 		}
 
-        if (temp < 59){
+        if (temp < 62){
 			if (ctrl == 1){		
 				if (temp == 0x26){				// scan code for l
 					clear_screen();
@@ -192,6 +196,20 @@ void handle_keyboard(){
 			}
 			else if (alt == 1){
 				//do something
+				switch (temp)
+				{
+				case 59:
+					printf("F1");
+					break;
+				case 60:
+					printf("F2");
+					break;
+				case 61:
+					printf("F3");
+					break;
+				default:
+					break;
+				}
 				current_char = 0x00;			// do not print it
 			}
 			else if (capslock == 1 && shift == 1){
