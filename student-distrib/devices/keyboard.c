@@ -208,14 +208,17 @@ void handle_keyboard(){
 				{
 				case 59:
 					printf("F1");
+					ATTRIB = 0x7;
 					switch_terminal(0);
 					break;
 				case 60:
 					printf("F2");
+					ATTRIB = 0x20;
 					switch_terminal(1);
 					break;
 				case 61:
 					printf("F3");
+					ATTRIB = 0x30;
 					switch_terminal(2);
 					break;
 				default:
@@ -444,6 +447,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		flush_tlbs();
 		// Setup stack to return to new program
 		send_eoi(1);
+		clear_screen();
 		setup_exec_stack(eip,(uint32_t)&(pcb_self->halt_ebp));
 		return 0;
 	}

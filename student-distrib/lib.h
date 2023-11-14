@@ -7,6 +7,8 @@
 
 #include "types.h"
 
+extern volatile uint8_t ATTRIB;
+
 void vid_scroll_up(void);
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);
