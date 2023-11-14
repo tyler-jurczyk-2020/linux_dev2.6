@@ -390,10 +390,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	pcb_t* active_terminal_pcb = (pcb_t*)get_pcb_ptr(onscreen_terminal_pid);
 
 	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
-	
-	if(onscreen_terminal->terminal_num == requested_terminal_num){
-		return 0;
-	}
+
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
