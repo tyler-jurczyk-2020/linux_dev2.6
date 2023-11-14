@@ -91,6 +91,8 @@ static char scan_code_set_1_shift_cap[62] = {
 }; 
 
 keyboard_struct keyboard;
+cursor_pos cursor[3];
+uint8_t color[3] = {0x07, 0x20, 0x30};
 
 //volatile uint8_t keyboard_response;
 volatile uint8_t old_data = 0x00;
@@ -208,17 +210,14 @@ void handle_keyboard(){
 				{
 				case 59:
 					printf("F1");
-					ATTRIB = 0x7;
 					switch_terminal(0);
 					break;
 				case 60:
 					printf("F2");
-					ATTRIB = 0x20;
 					switch_terminal(1);
 					break;
 				case 61:
 					printf("F3");
-					ATTRIB = 0x30;
 					switch_terminal(2);
 					break;
 				default:
@@ -394,7 +393,8 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
-	
+	ATTRIB = (uint8_t)color[requested_terminal_num];
+	switch_cursor(onscreen_terminal->terminal_num, (uint8_t)requested_terminal_num);
 	
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
@@ -462,3 +462,12 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	return 1;
 }
 
+void switch_cursor(uint8_t curr_terminal, uint8_t tar_terminal){
+	cursor[curr_terminal].screen_x = screen_x;
+	cursor[curr_terminal].screen_y = screen_y;
+
+	screen_x = cursor[tar_terminal].screen_x;
+	screen_y = cursor[tar_terminal].screen_y;
+	update_cursor();
+	return;
+}

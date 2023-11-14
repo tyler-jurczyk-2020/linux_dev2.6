@@ -8,9 +8,8 @@
 #define NUM_ROWS    25
 
 volatile uint8_t ATTRIB = 0x7;
-
-static int screen_x;
-static int screen_y;
+volatile int screen_x;
+volatile int screen_y;
 static char* video_mem = (char *)VIDEO;
 
 /* void clear(void);
