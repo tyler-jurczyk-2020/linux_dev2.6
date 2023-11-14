@@ -64,6 +64,8 @@ extern int terminal_close(int32_t fd);
 extern int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes);
 /*puts what is read on to terminal*/
 extern int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes);
+//does a lot, see the c file, gist is it switches terminals duh
+int32_t switch_terminal(int8_t requested_terminal_num);
 
 extern int dummy_read();
 

@@ -208,12 +208,15 @@ void handle_keyboard(){
 				{
 				case 59:
 					printf("F1");
+					switch_terminal(0);
 					break;
 				case 60:
 					printf("F2");
+					switch_terminal(1);
 					break;
 				case 61:
 					printf("F3");
+					switch_terminal(2);
 					break;
 				default:
 					break;
@@ -435,7 +438,9 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		// Setup TSS
 		tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
 		tss.ss0 = KERNEL_DS;
+		flush_tlbs();
 		// Setup stack to return to new program
+		send_eoi(1);
 		setup_exec_stack(eip,(uint32_t)&(pcb_self->halt_ebp));
 		return 0;
 	}

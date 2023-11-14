@@ -112,6 +112,7 @@ BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
  *               Updates paging and the TSS
  */
 uint32_t halt(uint8_t status){
+
     // Mark pcb as available
     pcb_t *pcb_self = get_pcb();
     process_ids[pcb_self->process_id] = 0; 
