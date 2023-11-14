@@ -20,6 +20,15 @@ void setup_pager_table() {
         if (i == PG_TBL_IDX) {
             page_tbl[i].entry =  VIDEO_PAGE_FLAGS;
         } 
+        else if (i == PG_TBL_IDX + 1) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + FOUR_KB; 
+        }
+        else if (i == PG_TBL_IDX + 2) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 2*FOUR_KB;
+        }
+        else if(i == PG_TBL_IDX + 3) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
+        }
         else {
             page_tbl[i].entry = EMPTY_PAGE;
         }
@@ -70,7 +79,7 @@ void set_pager_dir_entry(uint32_t page_addr) {
     entry->base_addr = page_addr >> 22;
 }
 
-void setup_pager_vidmap_entry(uint32_t vmem_addr) {
+void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page) {
     page_table_entry_t* entry = &page_tbl_vmem[(vmem_addr >> 12) & 0x3FF];
     entry->present = 1;
     entry->r_w = 1;
@@ -82,15 +91,21 @@ void setup_pager_vidmap_entry(uint32_t vmem_addr) {
     entry->tbl_attr_idx = 0;
     entry->global = 0;
     entry->avail = 0;
-    entry->base_addr = 0xB8;
+    entry->base_addr = kernel_page >> 12;
 }
 
 void setup_pager_vidmap_table(uint32_t vmem_addr) {
     unsigned int i;
     for(i = 0; i < TABLE_SZ; i++) {
         if (i == ((vmem_addr >> 12) & 0x3FF)) {
-            setup_pager_vidmap_entry(vmem_addr); 
+            setup_pager_vidmap_entry(vmem_addr, KERNEL_VMEM); // Map to real terminal 0
         } 
+        else if (i == (((vmem_addr + FOUR_KB) >> 12) & 0x3FF)) {
+            setup_pager_vidmap_entry(vmem_addr + FOUR_KB, KERNEL_VMEM + 2*FOUR_KB); // Map to fake terminal 1
+        }
+        else if (i == (((vmem_addr + 2*FOUR_KB) >> 12) & 0x3FF)) {
+            setup_pager_vidmap_entry(vmem_addr + 2*FOUR_KB, KERNEL_VMEM + 3*FOUR_KB); // Map to fake terminal 2
+        }
         else {
             page_tbl_vmem[i].entry = EMPTY_PAGE;
         }
@@ -98,3 +113,9 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
     page_directory_entry_t* cur_page_dir = get_cr3();  
     cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
 }
+
+void swap_vmem(uint32_t active, uint32_t inactive) {
+    setup_pager_vidmap_entry(VMEM_ADDR + active * FOUR_KB, KERNEL_VMEM + active * FOUR_KB);
+    setup_pager_vidmap_entry(VMEM_ADDR + inactive * FOUR_KB, KERNEL_VMEM);
+}
+
