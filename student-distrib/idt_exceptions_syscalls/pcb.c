@@ -12,7 +12,7 @@ int8_t find_terminal_pid(uint8_t requested){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
-		if(traverse->terminal_info.terminal_num==requested){
+		if(process_ids[i] && traverse->terminal_info.terminal_num==requested){
 			return i;
 		}
 	}
@@ -27,7 +27,7 @@ int8_t find_onscreen_terminal_num(){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
-		if(traverse->terminal_info.is_onscreen){
+		if(process_ids[i] && traverse->terminal_info.is_onscreen){
 			return traverse->terminal_info.terminal_num;
 		}
 	}
@@ -43,7 +43,7 @@ int8_t find_onscreen_terminal_pid(){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
-		if(traverse->terminal_info.is_onscreen){
+		if(process_ids[i] && traverse->terminal_info.is_onscreen){
 			return i;
 		}
 	}

@@ -116,23 +116,19 @@ uint32_t halt(uint8_t status){
 
     // Mark pcb as available
     pcb_t *pcb_self = get_pcb();
-    process_ids[pcb_self->process_id] = 0; 
     // Get parent process
     pcb_t *pcb_parent = get_pcb()->parent;
     if (pcb_parent == NULL) {
+		//re execute
+		process_ids[pcb_self->process_id] = 0; 
         execute((const uint8_t *)"shell"); 
     }
 	
 	//update onscreen info
-	//if parent is from a different terminal, switch the screen to show parent
-	if(pcb_self->terminal_info.terminal_num != pcb_parent->terminal_info.terminal_num){
-		switch_terminal(pcb_parent->terminal_info.terminal_num);
-	}else{
-		//just pass down onscreen info to parent
-		pcb_parent->terminal_info.is_onscreen = pcb_self->terminal_info.is_onscreen;
-		pcb_self->terminal_info.is_onscreen = 0;
-	}
-    
+	switch_terminal(pcb_parent->terminal_info.terminal_num);
+	
+	
+    process_ids[pcb_self->process_id] = 0; 
 	// Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
     set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
