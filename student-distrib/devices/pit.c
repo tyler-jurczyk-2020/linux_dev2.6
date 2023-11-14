@@ -1,6 +1,7 @@
 #include "i8259.h"
 #include "pit.h"
 #include "../lib.h"
+#include "../idt_exceptions_syscalls/pcb.h"
 
 void init_pit(){
     enable_irq(IRQ0);
@@ -8,9 +9,14 @@ void init_pit(){
 }
 
 void pit_handler(){
-    /* need to be done */
-    printf("PIT! ");
-    send_eoi(IRQ0);
+    /* get current pcb */
+	pcb_t* curr_pcb = get_pcb();
+	//save ebp/esp to use as context to return when the scheduler comes back
+	save_regs(&(curr_pcb->schedule_ebp),&(curr_pcb->schedule_esp));
+	
+	pcb_t* next_active_pcb = find_next_active_pcb(curr_pcb);
+   
+	do_schedule(next_active_pcb->schedule_ebp,next_active_pcb->schedule_esp);
 }
 
 void timer_set(int freq){

@@ -34,6 +34,21 @@ int8_t find_onscreen_terminal_num(){
 	return -1;
 }
 
+pcb_t* find_next_active_pcb(uint32_t current_process){
+	uint8_t i;
+	pcb_t* traverse = (pcb_t*) current_process;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		traverse = (pcb_t *)((uint32_t)traverse - EIGHT_KB);
+		if((uint32_t)traverse == EIGHT_MB-EIGHT_KB*(MAX_PROCESSES)){
+			traverse = EIGHT_MB-EIGHT_KB;
+		}
+		if(process_ids[i] && traverse->is_active == 1){
+			return traverse;
+		}
+	}
+	//should never happen
+	return NULL;
+}
 
 /* int8_t find_onscreen_terminal_id();
  * Inputs: none

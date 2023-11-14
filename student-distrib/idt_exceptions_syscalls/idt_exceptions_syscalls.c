@@ -7,6 +7,8 @@
 #include "pcb.h"
 #include "../devices/rtc.h"
 #include "../devices/keyboard.h"
+#include "../devices/pit.h"
+
 #define VIDEO       0xB8000
 /*
 Struct to map vector#'s to their english error meaning
@@ -187,11 +189,15 @@ uint32_t execute(const uint8_t* command){
 		parent->terminal_info.is_onscreen = 0;
 	}else{
 		//this is the case of the first terminal
+		init_pit();
 		pcb_self->terminal_info.is_onscreen = 1;
 		pcb_self->terminal_info.terminal_num = 0;
 		pcb_self->terminal_info.fake_page_addr = VIDEO + EIGHT_KB/2;
 	}
     setup_pcb(pcb_self, avail_process, parent);
+	//TODO make sure this works
+	save_regs(&(pcb_self->schedule_ebp),&(pcb_self->schedule_esp));
+	
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
     // Setup TSS
     tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;

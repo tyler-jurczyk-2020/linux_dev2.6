@@ -36,13 +36,15 @@ typedef struct terminal_t{
 } terminal_t;
 
 typedef struct pcb_t {
+	
     uint32_t process_id;
     
-	struct pcb_t *parent;
-	struct terminal_t terminal_info;
-	
+	uint8_t is_active;
 	uint32_t schedule_esp;
 	uint32_t schedule_ebp;
+	
+	struct pcb_t *parent;
+	struct terminal_t terminal_info;
 	
     uint32_t esp0;
 	uint32_t halt_ebp; //to be set when this process is executed, keeps track of where to return
@@ -51,6 +53,8 @@ typedef struct pcb_t {
     file_descriptor_t fd[8]; 
 } pcb_t;
 
+/* returns next active pcb */
+pcb_t* find_next_active_pcb(uint32_t current_process);
 /* returns terminal num (0,1,or 2) */
 int8_t find_onscreen_terminal_num();
 /* returns process id of onscreen terminal (0-5) */

@@ -13,4 +13,8 @@
 
 extern void init_pit();
 extern void pit_handler();
+
+extern void save_regs(uint32_t ebp_pcb_addr, uint32_t esp_pcb_addr);
+extern void do_schedule(uint32_t ebp, uint32_t esp);
+
 void timer_set(int freq);
