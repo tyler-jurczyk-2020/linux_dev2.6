@@ -445,11 +445,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		return 0;
 	}
 	
-
-	if(onscreen_terminal_pid < 0){
-		//TODO make new terminal
-		return -1;
-	}
 	
 	pcb_t* requested_pcb = (pcb_t*)get_pcb_ptr(requested_pid);
 	terminal_t* requested_terminal = &(requested_pcb->terminal_info);

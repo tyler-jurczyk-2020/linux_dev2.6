@@ -6,6 +6,7 @@
 #include "../filesystem/filesystem.h"
 #include "pcb.h"
 #include "../devices/rtc.h"
+#include "../devices/keyboard.h"
 #define VIDEO       0xB8000
 /*
 Struct to map vector#'s to their english error meaning
@@ -123,8 +124,14 @@ uint32_t halt(uint8_t status){
     }
 	
 	//update onscreen info
-	pcb_parent->terminal_info.is_onscreen = pcb_self->terminal_info.is_onscreen;
-	pcb_self->terminal_info.is_onscreen = 0;
+	//if parent is from a different terminal, switch the screen to show parent
+	if(pcb_self->terminal_info.terminal_num != pcb_parent->terminal_info.terminal_num){
+		switch_terminal(pcb_parent->terminal_info.terminal_num);
+	}else{
+		//just pass down onscreen info to parent
+		pcb_parent->terminal_info.is_onscreen = pcb_self->terminal_info.is_onscreen;
+		pcb_self->terminal_info.is_onscreen = 0;
+	}
     
 	// Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
