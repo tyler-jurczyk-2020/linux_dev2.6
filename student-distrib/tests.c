@@ -189,7 +189,7 @@ void launch_tests(){
     //test_small_file();
     //test_dir_read_single();
     //test_dir_read_multi();
-    //execute((const uint8_t *)"shell");
-	pit_test();
+    execute((const uint8_t *)"shell");
+	//pit_test();
 	
     }

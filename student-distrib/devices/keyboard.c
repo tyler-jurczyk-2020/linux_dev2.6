@@ -4,6 +4,14 @@
 #include "i8259.h"
 #include "../x86_desc.h"
 #include "../idt_exceptions_syscalls/pcb.h"
+#include "../filesystem/paging.h"
+#include "../filesystem/filesystem.h"
+
+#define VIDEO       0xB8000
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define EIGHT_MB 0x00800000
+#define FOUR_MB 0x00400000
 
 /*This is the tabled used to decode scan code from keyboard*/
 static char scan_code_set_1_norm[62] = {	// 59 characters for what we care
@@ -370,36 +378,83 @@ outputs: success on successful switch
 side effects: allocates new PCB, switches paging as well
 */
 int32_t switch_terminal(int8_t requested_terminal_num){
+	/* get current terminal onscreen */
+	int8_t onscreen_terminal_pid = find_onscreen_terminal_pid();
+	
+	pcb_t* active_terminal_pcb = (pcb_t*)get_pcb_ptr(onscreen_terminal_pid);
+
+	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
+	
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
+	
+	
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
-		return -1;
+		char* command = "shell";
+		//BELOW IS PRETTY MUCH EXECUTE
+		int32_t start_of_prog = check_executable((uint8_t *)command);
+		if (start_of_prog < 0) {
+			return -1; 
+		}
+		// Determine process id
+		int8_t avail_process = get_process_id();
+		if (avail_process < 0) {
+			return -1; 
+		}
+		// Setup paging for executable
+		set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
+		flush_tlbs();
+		// Copy executable to memory
+		uint32_t eip;
+		open_executable(start_of_prog, &eip); 
+		// Setup child pcb
+		pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
+		pcb_t *parent = get_parent_pcb(avail_process);
 		
+		parent->terminal_info.is_onscreen = 0;
+		pcb_self->terminal_info.is_onscreen = 1;
+		pcb_self->terminal_info.terminal_num = requested_terminal_num;
+		pcb_self->terminal_info.user_page_addr = 0;
+		pcb_self->terminal_info.fake_page_addr =  VIDEO + EIGHT_KB*(requested_terminal_num+1)/2;
+		
+		setup_pcb(pcb_self, avail_process, parent);
+
+
+		terminal_t* requested_terminal = &(pcb_self->terminal_info);
+		/*
+		switch vmem:
+		*/
+		memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
+		memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+		onscreen_terminal->is_onscreen = 0;
+		requested_terminal->is_onscreen = 1;
+		
+		
+		// Setup TSS
+		tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
+		tss.ss0 = KERNEL_DS;
+		// Setup stack to return to new program
+		setup_exec_stack(eip,(uint32_t)&(pcb_self->halt_ebp));
+		return 0;
 	}
 	
-	int8_t onscreen_terminal_pid = find_onscreen_terminal_pid();
+
 	if(onscreen_terminal_pid < 0){
+		//TODO make new terminal
 		return -1;
 	}
-	pcb_t* active_terminal_pcb = (pcb_t*)get_pcb_ptr(onscreen_terminal_pid);
 	
 	pcb_t* requested_pcb = (pcb_t*)get_pcb_ptr(requested_pid);
-	
-	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
 	terminal_t* requested_terminal = &(requested_pcb->terminal_info);
-	//TODO in halt/execute,
-	//	execute <= set on screen of new pcb to parent->onscreen, set parent->onscreen to false
-	//	halt    <= set on screen of parent pcb to current->onscreen, set current->onscreen to false
-	
 	/*
 	switch vmem:
-	point current vmem page to current process' fake vmem page
-	copy real(physical) video mem to current_process' fake vmem page
-	copy requested fake vmem to real vmem (physical)
-	point requested vmem page to real vmem
 	*/
+	memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
+	memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+	onscreen_terminal->is_onscreen = 0;
+	requested_terminal->is_onscreen = 1;
 	return 1;
 }
 

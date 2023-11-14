@@ -6,7 +6,7 @@
 #include "../filesystem/filesystem.h"
 #include "pcb.h"
 #include "../devices/rtc.h"
-
+#define VIDEO       0xB8000
 /*
 Struct to map vector#'s to their english error meaning
 Struct defined in handlers.h
@@ -120,7 +120,12 @@ uint32_t halt(uint8_t status){
     if (pcb_parent == NULL) {
         execute((const uint8_t *)"shell"); 
     }
-    // Update page directory 
+	
+	//update onscreen info
+	pcb_parent->terminal_info.is_onscreen = pcb_self->terminal_info.is_onscreen;
+	pcb_self->terminal_info.is_onscreen = 0;
+    
+	// Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
     set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
 	flush_tlbs();
@@ -170,9 +175,17 @@ uint32_t execute(const uint8_t* command){
     pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
 	if(parent){
+		//copy terminal info from parent, set parent to not onscreen
+		pcb_self->terminal_info.is_onscreen = parent->terminal_info.is_onscreen;
 		pcb_self->terminal_info.terminal_num = parent->terminal_info.terminal_num;
 		pcb_self->terminal_info.user_page_addr = parent->terminal_info.user_page_addr;
 		pcb_self->terminal_info.fake_page_addr = parent->terminal_info.fake_page_addr;
+		parent->terminal_info.is_onscreen = 0;
+	}else{
+		//this is the case of the first terminal
+		pcb_self->terminal_info.is_onscreen = 1;
+		pcb_self->terminal_info.terminal_num = 0;
+		pcb_self->terminal_info.fake_page_addr = VIDEO + EIGHT_KB/2;
 	}
     setup_pcb(pcb_self, avail_process, parent);
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);

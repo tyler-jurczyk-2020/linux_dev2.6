@@ -73,4 +73,8 @@ extern int dummy_write();
 
 extern int dummy_close();
 
+extern void setup_exec_stack(uint32_t,uint32_t);
+extern uint8_t halt_process(uint32_t,uint32_t);
+extern void flush_tlbs();
+
 #endif
