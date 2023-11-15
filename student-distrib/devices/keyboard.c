@@ -90,7 +90,10 @@ static char scan_code_set_1_shift_cap[62] = {
 	0x00, 0x00
 }; 
 
-keyboard_struct keyboard;
+keyboard_struct keyboard[3];
+volatile int curr_terminal = 0;
+cursor_pos cursor[3];
+uint8_t color[3] = {0x07, 0x20, 0x30};
 
 //volatile uint8_t keyboard_response;
 volatile uint8_t old_data = 0x00;
@@ -107,15 +110,15 @@ no output
 void keyboard_init(){
 	int i;
 	for(i = 0; i<128; i++){			// size = 128
-		keyboard.buffer[i] = 0;
+		keyboard[curr_terminal].buffer[i] = 0;
 	}
-	keyboard.top = 0;
+	keyboard[curr_terminal].top = 0;
 	shift = 0;
 	capslock = 0;
 	alt = 0;
 	ctrl = 0;
 	holding_count = HOLDING_INIT;
-	keyboard.enter_lock = 0;
+	keyboard[curr_terminal].enter_lock = 0;
     enable_irq(IRQ1); 
 }                  
 
@@ -130,7 +133,7 @@ void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
-    if ((temp != old_data || holding_count == 0) && keyboard.enter_lock == 0){
+    if ((temp != old_data || holding_count == 0) && keyboard[curr_terminal].enter_lock == 0){
 		
 		if (temp != old_data){				// function key should only be triggered once
 			
@@ -208,17 +211,14 @@ void handle_keyboard(){
 				{
 				case 59:
 					printf("F1");
-					ATTRIB = 0x7;
 					switch_terminal(0);
 					break;
 				case 60:
 					printf("F2");
-					ATTRIB = 0x20;
 					switch_terminal(1);
 					break;
 				case 61:
 					printf("F3");
-					ATTRIB = 0x30;
 					switch_terminal(2);
 					break;
 				default:
@@ -244,35 +244,35 @@ void handle_keyboard(){
 			if (current_char == ESC){
 				// Do something
 			}
-            else if(current_char == '\b' && keyboard.top > 0){			//Check for backspace
+            else if(current_char == '\b' && keyboard[curr_terminal].top > 0){			//Check for backspace
 				delc();
-				keyboard.top--;
+				keyboard[curr_terminal].top--;
 			}
-			else if (current_char == '\t' && keyboard.top < 124){		// 123 + 4 = 127 , should not write after this position, leave a space for '\n'
+			else if (current_char == '\t' && keyboard[curr_terminal].top < 124){		// 123 + 4 = 127 , should not write after this position, leave a space for '\n'
 				puts("    ");
-				keyboard.buffer[keyboard.top] = ' ';
-				keyboard.buffer[keyboard.top + 1] = ' ';
-				keyboard.buffer[keyboard.top + 2] = ' ';
-				keyboard.buffer[keyboard.top + 3] = ' ';
-				keyboard.top += 4;										// 4 space for tab
+				keyboard[curr_terminal].buffer[keyboard[curr_terminal].top] = ' ';
+				keyboard[curr_terminal].buffer[keyboard[curr_terminal].top + 1] = ' ';
+				keyboard[curr_terminal].buffer[keyboard[curr_terminal].top + 2] = ' ';
+				keyboard[curr_terminal].buffer[keyboard[curr_terminal].top + 3] = ' ';
+				keyboard[curr_terminal].top += 4;										// 4 space for tab
 			}
-			else if(current_char != '\b' && keyboard.top < 128 && current_char != '\t'){//dont add to buffer if it's full
-				if (keyboard.top == 127){								// check when reaches top
+			else if(current_char != '\b' && keyboard[curr_terminal].top < 128 && current_char != '\t'){//dont add to buffer if it's full
+				if (keyboard[curr_terminal].top == 127){								// check when reaches top
 					if (current_char == '\n'){
 						putc(current_char);
-						keyboard.buffer[keyboard.top] = current_char;		
-						keyboard.top++;
+						keyboard[curr_terminal].buffer[keyboard[curr_terminal].top] = current_char;		
+						keyboard[curr_terminal].top++;
 					}
 				}
 				else{
 					putc(current_char);
-					keyboard.buffer[keyboard.top] = current_char;		
-					keyboard.top++;
+					keyboard[curr_terminal].buffer[keyboard[curr_terminal].top] = current_char;		
+					keyboard[curr_terminal].top++;
 				}
 			}
         }
 		if (current_char == '\n'){		// locks the keyboard is enter pressed						
-			keyboard.enter_lock = 1;
+			keyboard[curr_terminal].enter_lock = 1;
 			//to do
 		}
     }
@@ -331,24 +331,24 @@ int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
 	}
 	
 	//wait for enter key
-	while(keyboard.top == 0 || keyboard.buffer[keyboard.top-1] != '\n');
+	while(keyboard[curr_terminal].top == 0 || keyboard[curr_terminal].buffer[keyboard[curr_terminal].top-1] != '\n');
 	//fill in buffer, set to 0 if keyboard does not have that many presses
 	cli();
 	for(i = 0; i<nbytes; i++){
-		if(i<keyboard.top){
-			((uint8_t*)buffer)[i] = keyboard.buffer[i];
+		if(i<keyboard[curr_terminal].top){
+			((uint8_t*)buffer)[i] = keyboard[curr_terminal].buffer[i];
 			count++;
 		}else{
 			((uint8_t*)buffer)[i] = 0;
 		}
 	}
-	if(keyboard.top>=i){//bring down the top to how many were left over, and return this amount
-		keyboard.top = keyboard.top-i;
+	if(keyboard[curr_terminal].top>=i){//bring down the top to how many were left over, and return this amount
+		keyboard[curr_terminal].top = keyboard[curr_terminal].top-i;
 	}else{
-		keyboard.top = 0;
+		keyboard[curr_terminal].top = 0;
 	}
 	sti();
-	keyboard.enter_lock = 0;
+	keyboard[curr_terminal].enter_lock = 0;
 	return count;
 	
 }
@@ -394,8 +394,10 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
-	
-	
+	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
+	switch_cursor(onscreen_terminal->terminal_num, (uint8_t)requested_terminal_num);
+	curr_terminal = (int)requested_terminal_num;
+
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
 		char* command = "shell";
@@ -462,3 +464,12 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	return 1;
 }
 
+void switch_cursor(uint8_t curr_terminal, uint8_t tar_terminal){
+	cursor[curr_terminal].screen_x = screen_x;
+	cursor[curr_terminal].screen_y = screen_y;
+
+	screen_x = cursor[tar_terminal].screen_x;
+	screen_y = cursor[tar_terminal].screen_y;
+	update_cursor();
+	return;
+}

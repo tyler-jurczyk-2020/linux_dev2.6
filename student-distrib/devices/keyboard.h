@@ -41,6 +41,11 @@ typedef struct keyboard_struct  {
     uint8_t enter_lock;
 }keyboard_struct;
 
+typedef struct cursor_pos{
+    int screen_x;
+    int screen_y;
+}cursor_pos;
+
 /* This function initialize the keyboard*/
 extern void keyboard_init();
 /*This is the keyboard handler*/
@@ -66,6 +71,8 @@ extern int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes);
 extern int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes);
 //does a lot, see the c file, gist is it switches terminals duh
 int32_t switch_terminal(int8_t requested_terminal_num);
+
+void switch_cursor(uint8_t curr_terminal, uint8_t tar_terminal);
 
 extern int dummy_read();
 
