@@ -39,7 +39,7 @@ pcb_t* find_next_active_pcb(uint32_t current_process){
 	pcb_t* traverse = (pcb_t*) current_process;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		if((uint32_t)traverse == EIGHT_MB-EIGHT_KB*(MAX_PROCESSES)){
-			traverse = (pcb_t*)(EIGHT_MB-EIGHT_KB);
+			traverse = (pcb_t*)(EIGHT_MB);
 		}
 		traverse = (pcb_t *)((uint32_t)traverse - EIGHT_KB);
 		if(process_ids[traverse->process_id] && traverse->is_active == 1){

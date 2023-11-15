@@ -210,15 +210,12 @@ void handle_keyboard(){
 				switch (temp)
 				{
 				case 59:
-					printf("F1");
 					switch_terminal(0);
 					break;
 				case 60:
-					printf("F2");
 					switch_terminal(1);
 					break;
 				case 61:
-					printf("F3");
 					switch_terminal(2);
 					break;
 				default:
