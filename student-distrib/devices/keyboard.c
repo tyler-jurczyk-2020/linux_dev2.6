@@ -419,12 +419,16 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
 		pcb_t *parent = get_parent_pcb(avail_process);
 		
+		//after switching terminals, old terminal shouldn't be displayed on screen
 		parent->terminal_info.is_onscreen = 0;
+		//set up vmem paging stuff so scheduler can switch correctly
 		pcb_self->terminal_info.is_onscreen = 1;
 		pcb_self->terminal_info.terminal_num = requested_terminal_num;
 		pcb_self->terminal_info.user_page_addr = 0;
 		pcb_self->terminal_info.fake_page_addr =  VIDEO + EIGHT_KB*(requested_terminal_num+1)/2;
 		
+		//set this new process as active unconditionally, since it is a new terminal
+		pcb_self->is_active = 1;
 		setup_pcb(pcb_self, avail_process, parent);
 
 
@@ -442,6 +446,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
 		tss.ss0 = KERNEL_DS;
 		flush_tlbs();
+		save_regs((uint32_t)&(pcb_self->schedule_ebp),(uint32_t)&(pcb_self->schedule_esp));
 		// Setup stack to return to new program
 		send_eoi(1);
 		clear_screen();

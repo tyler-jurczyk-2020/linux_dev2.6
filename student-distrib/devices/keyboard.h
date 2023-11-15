@@ -75,6 +75,7 @@ extern int dummy_write();
 
 extern int dummy_close();
 
+extern void save_regs(uint32_t ebp_pcb_addr, uint32_t esp_pcb_addr);
 extern void setup_exec_stack(uint32_t,uint32_t);
 extern uint8_t halt_process(uint32_t,uint32_t);
 extern void flush_tlbs();

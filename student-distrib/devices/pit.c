@@ -11,12 +11,19 @@ void init_pit(){
 void pit_handler(){
     /* get current pcb */
 	pcb_t* curr_pcb = get_pcb();
+	if(curr_pcb == NULL){
+		return;
+	}
 	//save ebp/esp to use as context to return when the scheduler comes back
-	save_regs(&(curr_pcb->schedule_ebp),&(curr_pcb->schedule_esp));
+	save_regs((uint32_t)&(curr_pcb->schedule_ebp),(uint32_t)&(curr_pcb->schedule_esp));
 	
-	pcb_t* next_active_pcb = find_next_active_pcb(curr_pcb);
-   
-	do_schedule(next_active_pcb->schedule_ebp,next_active_pcb->schedule_esp);
+	pcb_t* next_active_pcb = find_next_active_pcb((uint32_t)curr_pcb);
+	if(next_active_pcb == NULL){
+		send_eoi(0);
+		return;
+	}
+	send_eoi(0);
+	do_schedule((uint32_t)next_active_pcb->schedule_ebp,(uint32_t)next_active_pcb->schedule_esp);
 }
 
 void timer_set(int freq){

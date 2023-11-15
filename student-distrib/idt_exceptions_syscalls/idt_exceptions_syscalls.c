@@ -115,8 +115,7 @@ BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
  *               Updates paging and the TSS
  */
 uint32_t halt(uint8_t status){
-
-    // Mark pcb as available
+	cli();
     pcb_t *pcb_self = get_pcb();
     // Get parent process
     pcb_t *pcb_parent = get_pcb()->parent;
@@ -125,6 +124,10 @@ uint32_t halt(uint8_t status){
 		process_ids[pcb_self->process_id] = 0; 
         execute((const uint8_t *)"shell"); 
     }
+	
+	//hand back active tag to parent so scheduler can find
+	pcb_parent->is_active = pcb_self->is_active;
+	pcb_self->is_active = 0;
 	
 	//update onscreen info
 	switch_terminal(pcb_parent->terminal_info.terminal_num);
@@ -151,7 +154,8 @@ uint32_t halt(uint8_t status){
  *               Sets up the PCB, gets parent's info, sets up TSS, pushes info to stack to iret into user space
  */
 uint32_t execute(const uint8_t* command){
-    // Check executable
+    cli();
+	// Check executable
 	
     uint8_t copy_cmd[strlen((int8_t *)command)+1];
     copy_cmd[strlen((int8_t *)command)] = '\0';
@@ -187,16 +191,23 @@ uint32_t execute(const uint8_t* command){
 		pcb_self->terminal_info.user_page_addr = parent->terminal_info.user_page_addr;
 		pcb_self->terminal_info.fake_page_addr = parent->terminal_info.fake_page_addr;
 		parent->terminal_info.is_onscreen = 0;
+		//only allow one active process per terminal
+		pcb_self->is_active = parent->is_active;
+		parent->is_active = 0;
 	}else{
 		//this is the case of the first terminal
 		init_pit();
+
 		pcb_self->terminal_info.is_onscreen = 1;
 		pcb_self->terminal_info.terminal_num = 0;
 		pcb_self->terminal_info.fake_page_addr = VIDEO + EIGHT_KB/2;
+
+		//set active so scheduler can find it
+		pcb_self->is_active = 1;
 	}
     setup_pcb(pcb_self, avail_process, parent);
 	//TODO make sure this works
-	save_regs(&(pcb_self->schedule_ebp),&(pcb_self->schedule_esp));
+	save_regs((uint32_t)&(pcb_self->schedule_ebp),(uint32_t)&(pcb_self->schedule_esp));
 	
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
     // Setup TSS
