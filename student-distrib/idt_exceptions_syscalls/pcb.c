@@ -12,7 +12,7 @@ int8_t find_terminal_pid(uint8_t requested){
 	uint8_t i;
 	for(i = 0; i<MAX_PROCESSES; i++){
 		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
-		if(process_ids[traverse->process_id] && traverse->terminal_info.terminal_num==requested){
+		if(process_ids[traverse->process_id] && traverse->is_active && traverse->terminal_info.terminal_num==requested){
 			return i;
 		}
 	}

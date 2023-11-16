@@ -138,6 +138,7 @@ void handle_keyboard(){
 		send_eoi(1);
 		return;
 	}
+	
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);

@@ -124,22 +124,20 @@ uint32_t halt(uint8_t status){
 		process_ids[pcb_self->process_id] = 0; 
         execute((const uint8_t *)"shell"); 
     }
-	
-	
 	pcb_self->is_active = 0;
-	
-	//update onscreen info
+	//if not from same terminal, should not give back active tag, and should wait until pit moves away
+	if(pcb_parent->terminal_info.terminal_num != pcb_self->terminal_info.terminal_num){
+		switch_terminal(pcb_parent->terminal_info.terminal_num);
+		sti();
+		while(1);
+	}
+	//hand back active tag to parent so scheduler can find
+	pcb_parent->is_active = 1;
 	switch_terminal(pcb_parent->terminal_info.terminal_num);
 	
     process_ids[pcb_self->process_id] = 0; 
 	
-	//hand back active tag to parent so scheduler can find
-	//if not from same terminal, should not give back active tag, and should wait until pit moves away
-	if(pcb_parent->terminal_info.terminal_num != pcb_self->terminal_info.terminal_num){
-		sti();
-		while(1);
-	}
-	pcb_parent->is_active = 1;
+	
 	// Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
     set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
