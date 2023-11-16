@@ -91,7 +91,6 @@ static char scan_code_set_1_shift_cap[62] = {
 }; 
 
 keyboard_struct keyboard[3];
-volatile int curr_terminal = 0;
 cursor_pos cursor[3];
 uint8_t color[3] = {0x07, 0x20, 0x30};
 
@@ -108,17 +107,20 @@ no input
 no output
 */
 void keyboard_init(){
+	int curr_terminal;
 	int i;
-	for(i = 0; i<128; i++){			// size = 128
+	for(curr_terminal = 0; curr_terminal < 3; curr_terminal++){
+		for(i = 0; i<128; i++){			// size = 128
 		keyboard[curr_terminal].buffer[i] = 0;
+		}
+		keyboard[curr_terminal].top = 0;
+		keyboard[curr_terminal].enter_lock = 0;
 	}
-	keyboard[curr_terminal].top = 0;
 	shift = 0;
 	capslock = 0;
 	alt = 0;
 	ctrl = 0;
 	holding_count = HOLDING_INIT;
-	keyboard[curr_terminal].enter_lock = 0;
     enable_irq(IRQ1); 
 }                  
 
@@ -130,6 +132,12 @@ output: none
 side effect: print th typed key on screen, maintain buffer and out_buffer
 */
 void handle_keyboard(){
+	//ensure that typing interrupts only add to the ONSCREEN TERMINAL, not the terminal of the currently executing process
+	int curr_terminal = (int)find_onscreen_terminal_num();
+	if(curr_terminal < 0){
+		send_eoi(1);
+		return;
+	}
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
@@ -318,6 +326,11 @@ outputs: number of bytes written
 side effects: Clears the keyboard buffer, waits for enter until read goes through
 */
 int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
+	//SET CURR TERMINAL to ACTIVE PROCESS' TERMINAL, this is a SYS call not the handler
+	int curr_terminal = get_pcb()->terminal_info.terminal_num;
+	if(curr_terminal < 0){
+		return 0;
+	}
 	int i;
 	int count = 0;
 	if(nbytes == 0){
@@ -393,7 +406,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	*/
 	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
 	switch_cursor(onscreen_terminal->terminal_num, (uint8_t)requested_terminal_num);
-	curr_terminal = (int)requested_terminal_num;
 
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
@@ -429,7 +441,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		//set this new process as active unconditionally, since it is a new terminal
 		pcb_self->is_active = 1;
 		setup_pcb(pcb_self, avail_process, parent);
-
 
 		terminal_t* requested_terminal = &(pcb_self->terminal_info);
 		/*

@@ -11,6 +11,8 @@ extern volatile uint8_t ATTRIB;
 extern volatile int screen_x;
 extern volatile int screen_y;
 
+void set_video_start(char* new_start);
+
 void vid_scroll_up(void);
 int32_t printf(int8_t *format, ...);
 void putc(uint8_t c);

@@ -12,6 +12,18 @@ volatile int screen_x;
 volatile int screen_y;
 static char* video_mem = (char *)VIDEO;
 
+
+/*
+void set_video_start
+Inputs: new spot to start vmem
+Outputs: none
+side effects: to be used with scheduling to make different programs write to different pages
+*/
+void set_video_start(char* new_start){
+	video_mem = new_start;
+}
+
+
 /* void clear(void);
  * Inputs: void
  * Return Value: none
@@ -293,11 +305,12 @@ void delc() {
  */
 void vid_scroll_up(){
 	int i;
-	if(video_mem + (NUM_COLS*(NUM_ROWS+1)*2)>= (char*)0xB900){//end of vmem page
-		memcpy((void*)VIDEO, (video_mem+NUM_COLS*2), NUM_COLS*(NUM_ROWS-1)*2);
-		video_mem = (char*)VIDEO;
-	}else{
-		video_mem += NUM_COLS<<1;
+	int j;
+	for(i = 0; i<NUM_COLS; i++){
+		for(j = 0; j<NUM_ROWS-1; j++){
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1)) =  *(uint8_t *)(video_mem + ((NUM_COLS * (j+1) + i) << 1));//repeatedly copy row with next row
+			 *(uint8_t *)(video_mem + ((NUM_COLS * j + i) << 1) + 1) = ATTRIB;
+		}
 	}
 	for(i = 0; i<NUM_COLS; i++){
 		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1)) = ' ';//clear last row
