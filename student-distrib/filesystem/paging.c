@@ -20,15 +20,6 @@ void setup_pager_table() {
         if (i == PG_TBL_IDX) {
             page_tbl[i].entry =  VIDEO_PAGE_FLAGS;
         } 
-        else if (i == PG_TBL_IDX + 1) {
-            page_tbl[i].entry = VIDEO_PAGE_FLAGS + FOUR_KB; 
-        }
-        else if (i == PG_TBL_IDX + 2) {
-            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 2*FOUR_KB;
-        }
-        else if(i == PG_TBL_IDX + 3) {
-            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
-        }
         else {
             page_tbl[i].entry = EMPTY_PAGE;
         }
@@ -112,6 +103,21 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
     }   
     page_directory_entry_t* cur_page_dir = get_cr3();  
     cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
+}
+
+void update_kernel_vmem(uint32_t kernel_addr) {
+    page_table_entry_t* entry = &page_tbl[PG_TBL_IDX];
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 0;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->tbl_attr_idx = 0;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->base_addr = kernel_addr >> 12;
 }
 
 void swap_vmem(uint32_t active, uint32_t inactive) {
