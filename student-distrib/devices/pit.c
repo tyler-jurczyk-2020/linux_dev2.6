@@ -35,9 +35,9 @@ void pit_handler(){
     tss.ss0 = KERNEL_DS;
 	
 	if(next_active_pcb->terminal_info.is_onscreen){
-		set_video_start((char*)VIDEO);
+	    update_kernel_vmem(VIDEO, VIDEO);	
 	}else{
-		set_video_start((char*)next_active_pcb->terminal_info.fake_page_addr);
+        update_kernel_vmem(next_active_pcb->terminal_info.fake_page_addr, VIDEO);
 	}
 	
 	send_eoi(0);
