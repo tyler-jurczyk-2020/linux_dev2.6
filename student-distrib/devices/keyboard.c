@@ -6,6 +6,7 @@
 #include "../idt_exceptions_syscalls/pcb.h"
 #include "../filesystem/paging.h"
 #include "../filesystem/filesystem.h"
+#include "../filesystem/paging.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -447,8 +448,9 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		/*
 		switch vmem:
 		*/
-		memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
-		memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+		//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
+		//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+        switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
 		onscreen_terminal->is_onscreen = 0;
 		requested_terminal->is_onscreen = 1;
 		
@@ -471,8 +473,9 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	/*
 	switch vmem:
 	*/
-	memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
-	memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+	//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
+	//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
+    switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
 	onscreen_terminal->is_onscreen = 0;
 	requested_terminal->is_onscreen = 1;
 	return 1;

@@ -1,6 +1,13 @@
 #include "../types.h"
 #include "paging.h"
+#include "../lib.h"
 #include "../idt_exceptions_syscalls/idt_exceptions_syscalls.h"
+
+#define VIDEO       0xB8000
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA 0x3FF000
+
 
 page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
@@ -20,6 +27,18 @@ void setup_pager_table() {
         if (i == PG_TBL_IDX) {
             page_tbl[i].entry =  VIDEO_PAGE_FLAGS;
         } 
+        else if (i == PG_TBL_IDX + 1) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + FOUR_KB; 
+        }
+        else if (i == PG_TBL_IDX + 2) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 2*FOUR_KB;
+        }
+        else if(i == PG_TBL_IDX + 3) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
+        }
+        else if(i == TABLE_SZ - 1) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
+        }
         else {
             page_tbl[i].entry = EMPTY_PAGE;
         }
@@ -105,8 +124,8 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
     cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
 }
 
-void update_kernel_vmem(uint32_t kernel_addr) {
-    page_table_entry_t* entry = &page_tbl[PG_TBL_IDX];
+void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
+    page_table_entry_t* entry = &page_tbl[virtual >> 12];
     entry->present = 1;
     entry->r_w = 1;
     entry->usr_supr = 0;
@@ -117,7 +136,12 @@ void update_kernel_vmem(uint32_t kernel_addr) {
     entry->tbl_attr_idx = 0;
     entry->global = 0;
     entry->avail = 0;
-    entry->base_addr = kernel_addr >> 12;
+    entry->base_addr = physical >> 12;
+}
+
+void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen) { // Note: These should be both the fake addresses
+    memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) on_screen, NUM_ROWS*NUM_COLS*2);
+    memcpy((void *) off_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
 }
 
 void swap_vmem(uint32_t active, uint32_t inactive) {

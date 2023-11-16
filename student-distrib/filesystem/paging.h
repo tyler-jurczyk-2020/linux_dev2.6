@@ -101,6 +101,8 @@ void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page);
 
 void setup_pager_vidmap_table(uint32_t vmem_addr);
 
+void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen);
+
 void swap_vmem(uint32_t active, uint32_t inactive);
 
 #endif
