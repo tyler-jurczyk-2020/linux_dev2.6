@@ -140,8 +140,8 @@ void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
 }
 
 void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen) { // Note: These should be both the fake addresses
-    memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) on_screen, NUM_ROWS*NUM_COLS*2);
-    memcpy((void *) off_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
+    memcpy((void *) on_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
+    memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) off_screen, NUM_ROWS*NUM_COLS*2);
 }
 
 void swap_vmem(uint32_t active, uint32_t inactive) {
