@@ -37,7 +37,7 @@ void setup_pager_table() {
             page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
         }
         else if(i == TABLE_SZ - 1) {
-            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS;
         }
         else {
             page_tbl[i].entry = EMPTY_PAGE;

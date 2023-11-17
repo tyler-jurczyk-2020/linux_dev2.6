@@ -139,6 +139,14 @@ void handle_keyboard(){
 		send_eoi(1);
 		return;
 	}
+    //Update paging so that putc actually puts to the screen 
+    pcb_t *current_pcb = get_pcb();
+    uint32_t old_page = NULL;
+    if(!current_pcb->terminal_info.is_onscreen) {
+        old_page = current_pcb->terminal_info.fake_page_addr;
+        update_kernel_vmem(VIDEO, VIDEO);
+        flush_tlbs();
+    }
 	
     uint8_t temp;
     uint8_t current_char = 0x00;
@@ -287,6 +295,11 @@ void handle_keyboard(){
 		holding_count --;
 	}
     old_data = temp;
+    //Reset paging right before return
+    if(old_page != NULL) {
+        update_kernel_vmem(current_pcb->terminal_info.fake_page_addr, VIDEO);
+        flush_tlbs();
+    }
     send_eoi(1);
 }
 
@@ -450,7 +463,9 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		*/
 		//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
 		//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
-        switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
+        if (onscreen_terminal->terminal_num != requested_terminal->terminal_num) {
+            switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
+        }
 		onscreen_terminal->is_onscreen = 0;
 		requested_terminal->is_onscreen = 1;
 		
@@ -475,8 +490,11 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	*/
 	//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
 	//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
-    switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
-	onscreen_terminal->is_onscreen = 0;
+    //MAY NOT WANT TO ALWAYS SWITCH MEMORY!!!!!
+    if (onscreen_terminal->terminal_num != requested_terminal->terminal_num) {
+        switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
+    }
+    onscreen_terminal->is_onscreen = 0;
 	requested_terminal->is_onscreen = 1;
 	return 1;
 }

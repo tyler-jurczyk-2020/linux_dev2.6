@@ -39,6 +39,7 @@ void pit_handler(){
 	}else{
         update_kernel_vmem(next_active_pcb->terminal_info.fake_page_addr, VIDEO);
 	}
+    flush_tlbs();
 	
 	send_eoi(0);
 	do_schedule((uint32_t)next_active_pcb->schedule_ebp,(uint32_t)next_active_pcb->schedule_esp);
