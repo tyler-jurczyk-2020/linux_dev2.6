@@ -298,7 +298,9 @@ void delc() {
 		screen_x = NUM_COLS-1; 
 		screen_y--; //because putc auto increments
 	}
-	update_cursor();
+	if (get_pcb()->terminal_info.is_onscreen) {
+		update_cursor();
+	}
 }
 /* void vid_scroll_up();
  * Inputs: none
@@ -319,7 +321,9 @@ void vid_scroll_up(){
 		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1)) = ' ';//clear last row
 		*(uint8_t *)(video_mem + (((NUM_COLS*(NUM_ROWS-1))+i) << 1) + 1) = ATTRIB;
 	}
-	update_cursor();
+	if (get_pcb()->terminal_info.is_onscreen) {
+		update_cursor();
+	}
 	return;
 }
 
