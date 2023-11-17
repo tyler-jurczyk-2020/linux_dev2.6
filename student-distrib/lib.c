@@ -2,6 +2,7 @@
  * vim:ts=4 noexpandtab */
 
 #include "lib.h"
+#include "idt_exceptions_syscalls/pcb.h"
 
 #define VIDEO       0xB8000
 #define NUM_COLS    80
@@ -275,7 +276,9 @@ void putc(uint8_t c) {
 		screen_y = NUM_ROWS-1;
 		screen_x = 0;
 	}
-	update_cursor();
+	if (get_pcb()->terminal_info.is_onscreen) {
+		update_cursor();
+	}
 }
 
 /* void delc();
@@ -615,3 +618,5 @@ void test_interrupts(void) {
     }
 	
 }
+
+

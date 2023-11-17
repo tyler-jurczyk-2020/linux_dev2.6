@@ -146,6 +146,9 @@ void handle_keyboard(){
         old_page = current_pcb->terminal_info.fake_page_addr;
         update_kernel_vmem(VIDEO, VIDEO);
         flush_tlbs();
+        // If not currently on-screen, and we are not trying to switch terminals
+        switch_cursor(current_pcb->terminal_info.terminal_num, curr_terminal);
+        update_cursor(); 
     }
 	
     uint8_t temp;
@@ -299,6 +302,8 @@ void handle_keyboard(){
     if(old_page != NULL) {
         update_kernel_vmem(current_pcb->terminal_info.fake_page_addr, VIDEO);
         flush_tlbs();
+        switch_cursor(curr_terminal, current_pcb->terminal_info.terminal_num);
+        update_cursor();
     }
     send_eoi(1);
 }
@@ -421,6 +426,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	*/
 	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
 	switch_cursor(onscreen_terminal->terminal_num, (uint8_t)requested_terminal_num);
+    update_cursor();
 
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
@@ -505,6 +511,6 @@ void switch_cursor(uint8_t curr_terminal, uint8_t tar_terminal){
 
 	screen_x = cursor[tar_terminal].screen_x;
 	screen_y = cursor[tar_terminal].screen_y;
-	update_cursor();
+
 	return;
 }
