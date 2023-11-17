@@ -425,8 +425,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
 	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
-	switch_cursor(onscreen_terminal->terminal_num, (uint8_t)requested_terminal_num);
-    update_cursor();
 
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
@@ -467,8 +465,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		/*
 		switch vmem:
 		*/
-		//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
-		//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
         if (onscreen_terminal->terminal_num != requested_terminal->terminal_num) {
             switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
         }
@@ -494,9 +490,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	/*
 	switch vmem:
 	*/
-	//memcpy((char*)onscreen_terminal->fake_page_addr,(char*)VIDEO,NUM_ROWS*NUM_COLS*2);
-	//memcpy((char*)VIDEO,(char*)requested_terminal->fake_page_addr,NUM_ROWS*NUM_COLS*2);
-    //MAY NOT WANT TO ALWAYS SWITCH MEMORY!!!!!
     if (onscreen_terminal->terminal_num != requested_terminal->terminal_num) {
         switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
     }
