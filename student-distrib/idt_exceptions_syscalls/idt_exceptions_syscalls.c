@@ -123,17 +123,21 @@ uint32_t halt(uint8_t status){
 		//re execute
 		process_ids[pcb_self->process_id] = 0; 
         execute((const uint8_t *)"shell"); 
+		return -1;
     }
 	pcb_self->is_active = 0;
 	//if not from same terminal, should not give back active tag, and should wait until pit moves away
 	if(pcb_parent->terminal_info.terminal_num != pcb_self->terminal_info.terminal_num){
-		switch_terminal(pcb_parent->terminal_info.terminal_num);
+		switch_terminal(0);
+		process_ids[pcb_self->process_id] = 0;
 		sti();
 		while(1);
 	}
-	//hand back active tag to parent so scheduler can find
+
 	pcb_parent->is_active = 1;
 	switch_terminal(pcb_parent->terminal_info.terminal_num);
+	//hand back active tag to parent so scheduler can find
+	
 	
     process_ids[pcb_self->process_id] = 0; 
 	

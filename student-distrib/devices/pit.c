@@ -5,6 +5,7 @@
 #include "../idt_exceptions_syscalls/pcb.h"
 #include "../x86_desc.h"
 #include "../filesystem/paging.h"
+#include "keyboard.h"
 #define EIGHT_MB 0x00800000
 #define FOUR_MB 0x00400000
 #define VIDEO       0xB8000
@@ -37,8 +38,10 @@ void pit_handler(){
 	
 	if(next_active_pcb->terminal_info.is_onscreen){
 	    update_kernel_vmem(VIDEO, VIDEO);	
+        update_vidmap_vmem(VIDEO, USER_PAGE);
 	}else{
         update_kernel_vmem(next_active_pcb->terminal_info.fake_page_addr, VIDEO);
+        update_vidmap_vmem(next_active_pcb->terminal_info.fake_page_addr, USER_PAGE);
 	}
     flush_tlbs();
     switch_cursor(curr_pcb->terminal_info.terminal_num, next_active_pcb->terminal_info.terminal_num);
