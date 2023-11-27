@@ -1,5 +1,6 @@
 #include "i8259.h"
 #include "pit.h"
+#include "rtc.h"
 #include "../lib.h"
 #include "../idt_exceptions_syscalls/pcb.h"
 #include "../x86_desc.h"
@@ -11,7 +12,7 @@
 
 void init_pit(){
     enable_irq(IRQ0);
-    timer_set(RUNNING_F_L);
+    timer_set(RUNNING_F_H);
 }
 
 void pit_handler(){
@@ -47,6 +48,8 @@ void pit_handler(){
     if (next_active_pcb->terminal_info.is_onscreen) {
         update_cursor();
     }
+
+	// rtc_running_ternimal = next_active_pcb->terminal_info.terminal_num;
 
 	send_eoi(0);
 	do_schedule((uint32_t)next_active_pcb->schedule_ebp,(uint32_t)next_active_pcb->schedule_esp);

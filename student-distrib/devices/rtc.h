@@ -22,6 +22,7 @@
 #define RTC_HIGHEST_RATE 6
 #define RTC_V_BASE_F 512
 
+// volatile uint8_t rtc_running_ternimal = 0;
 
 volatile int interrupt; //interrupt flag
 
