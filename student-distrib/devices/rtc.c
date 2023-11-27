@@ -96,10 +96,17 @@ int rtc_interrupt_rate(uint32_t frequency_change) {
 	//test_interrupts();
 	
 	if (rtc_v_enable == 1){
-		count_down[0]--;
-		count_down[1]--;
-		count_down[2]--;
-		if (count_down[current_pcb->terminal_info.terminal_num] <= 0){
+		if (count_down[0] > 0){
+			count_down[0]--;
+		}
+		if (count_down[1] > 0){
+			count_down[1]--;
+		}
+		if (count_down[2] > 0){
+			count_down[2]--;
+		}
+		
+		if (count_down[current_pcb->terminal_info.terminal_num] == 0){
 			count_down[current_pcb->terminal_info.terminal_num] = count_num[current_pcb->terminal_info.terminal_num];
 			interrupt = 1; //interrupt occured
 		}
