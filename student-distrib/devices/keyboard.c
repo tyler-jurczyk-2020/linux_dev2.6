@@ -420,12 +420,11 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	pcb_t* active_terminal_pcb = (pcb_t*)get_pcb_ptr(onscreen_terminal_pid);
 
 	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
-
+	
+	
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
-	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
-
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
 	if(requested_pid < 0){
 		char* command = "shell";
@@ -439,6 +438,8 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		if (avail_process < 0) {
 			return -1; 
 		}
+		//set correct color
+		ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
 		// Setup paging for executable
 		set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
 		flush_tlbs();
@@ -483,7 +484,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		return 0;
 	}
 	
-	
+	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
 	pcb_t* requested_pcb = (pcb_t*)get_pcb_ptr(requested_pid);
 	terminal_t* requested_terminal = &(requested_pcb->terminal_info);
 	/*
@@ -494,6 +495,9 @@ int32_t switch_terminal(int8_t requested_terminal_num){
     }
     onscreen_terminal->is_onscreen = 0;
 	requested_terminal->is_onscreen = 1;
+	if(onscreen_terminal->terminal_num == requested_terminal->terminal_num){
+		return 1;
+	}
 	//if whatever is running now is NO LONGER onscreen, update the paging so any current terminal write calls write to the correct page
 	// in all other cases the pit will fix this
 	pcb_t* pit_active_pcb = get_pcb();
