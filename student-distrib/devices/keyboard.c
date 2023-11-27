@@ -471,7 +471,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		onscreen_terminal->is_onscreen = 0;
 		requested_terminal->is_onscreen = 1;
 		
-		
 		// Setup TSS
 		tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
 		tss.ss0 = KERNEL_DS;
@@ -488,13 +487,22 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	pcb_t* requested_pcb = (pcb_t*)get_pcb_ptr(requested_pid);
 	terminal_t* requested_terminal = &(requested_pcb->terminal_info);
 	/*
-	switch vmem:
+	copy vmem:
 	*/
     if (onscreen_terminal->terminal_num != requested_terminal->terminal_num) {
         switch_kernel_memory(onscreen_terminal->fake_page_addr, requested_terminal->fake_page_addr);
     }
     onscreen_terminal->is_onscreen = 0;
 	requested_terminal->is_onscreen = 1;
+	//if whatever is running now is NO LONGER onscreen, update the paging so any current terminal write calls write to the correct page
+	// in all other cases the pit will fix this
+	pcb_t* pit_active_pcb = get_pcb();
+	if(pit_active_pcb->terminal_info.is_onscreen){
+		update_kernel_vmem(VIDEO, VIDEO);	
+	}else{
+		update_kernel_vmem(pit_active_pcb->terminal_info.fake_page_addr, VIDEO);
+	}
+
 	return 1;
 }
 
