@@ -1,5 +1,6 @@
 #include "keyboard.h"
 #include "PS2.h"
+#include "rtc.h"
 #include "../lib.h"
 #include "i8259.h"
 #include "../x86_desc.h"
@@ -421,12 +422,14 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 
 	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
 
+	// rtc_running_ternimal = requested_terminal_num;
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/
 	ATTRIB = (uint8_t)color[(uint8_t)requested_terminal_num];
 
 	int8_t requested_pid = find_terminal_pid(requested_terminal_num);
+
 	if(requested_pid < 0){
 		char* command = "shell";
 		//BELOW IS PRETTY MUCH EXECUTE
