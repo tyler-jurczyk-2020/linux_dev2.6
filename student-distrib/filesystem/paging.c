@@ -110,12 +110,6 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
         if (i == ((vmem_addr >> 12) & 0x3FF)) {
             setup_pager_vidmap_entry(vmem_addr, KERNEL_VMEM); // Map to real terminal 0
         } 
-        else if (i == (((vmem_addr + FOUR_KB) >> 12) & 0x3FF)) {
-            setup_pager_vidmap_entry(vmem_addr + FOUR_KB, KERNEL_VMEM + 2*FOUR_KB); // Map to fake terminal 1
-        }
-        else if (i == (((vmem_addr + 2*FOUR_KB) >> 12) & 0x3FF)) {
-            setup_pager_vidmap_entry(vmem_addr + 2*FOUR_KB, KERNEL_VMEM + 3*FOUR_KB); // Map to fake terminal 2
-        }
         else {
             page_tbl_vmem[i].entry = EMPTY_PAGE;
         }
@@ -125,7 +119,7 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
 }
 
 void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
-    page_table_entry_t* entry = &page_tbl[virtual >> 12];
+    page_table_entry_t* entry = &page_tbl[(virtual >> 12) & 0x3FF];
     entry->present = 1;
     entry->r_w = 1;
     entry->usr_supr = 0;
@@ -139,13 +133,23 @@ void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
     entry->base_addr = physical >> 12;
 }
 
+void update_vidmap_vmem(uint32_t physical, uint32_t virtual) {
+    page_table_entry_t* entry = &page_tbl_vmem[(virtual >> 12) & 0x3FF];
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 1;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->tbl_attr_idx = 0;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->base_addr = physical >> 12;
+}
+
 void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen) { // Note: These should be both the fake addresses
     memcpy((void *) on_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
     memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) off_screen, NUM_ROWS*NUM_COLS*2);
-}
-
-void swap_vmem(uint32_t active, uint32_t inactive) {
-    setup_pager_vidmap_entry(VMEM_ADDR + active * FOUR_KB, KERNEL_VMEM + active * FOUR_KB);
-    setup_pager_vidmap_entry(VMEM_ADDR + inactive * FOUR_KB, KERNEL_VMEM);
 }
 

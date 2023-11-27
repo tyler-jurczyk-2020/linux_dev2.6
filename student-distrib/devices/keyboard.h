@@ -34,6 +34,10 @@
 #define HOLDING_INIT        3
 
 
+
+#define USER_PAGE   0x08400000
+
+
 /* keyboard struct, feel free to add flags/anything else necessary.*/
 typedef struct keyboard_struct  {
     uint8_t buffer[128]; //holds chars that have been typed

@@ -145,6 +145,7 @@ void handle_keyboard(){
     if(!current_pcb->terminal_info.is_onscreen) {
         old_page = current_pcb->terminal_info.fake_page_addr;
         update_kernel_vmem(VIDEO, VIDEO);
+        update_vidmap_vmem(VIDEO, USER_PAGE);
         flush_tlbs();
         // If not currently on-screen, and we are not trying to switch terminals
         switch_cursor(current_pcb->terminal_info.terminal_num, curr_terminal);
@@ -301,6 +302,7 @@ void handle_keyboard(){
     //Reset paging right before return
     if(old_page != NULL) {
         update_kernel_vmem(current_pcb->terminal_info.fake_page_addr, VIDEO);
+        update_vidmap_vmem(current_pcb->terminal_info.fake_page_addr, USER_PAGE);
         flush_tlbs();
         switch_cursor(curr_terminal, current_pcb->terminal_info.terminal_num);
         update_cursor();
@@ -503,8 +505,10 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 	pcb_t* pit_active_pcb = get_pcb();
 	if(pit_active_pcb->terminal_info.is_onscreen){
 		update_kernel_vmem(VIDEO, VIDEO);	
+        update_vidmap_vmem(VIDEO, USER_PAGE);
 	}else{
 		update_kernel_vmem(pit_active_pcb->terminal_info.fake_page_addr, VIDEO);
+        update_vidmap_vmem(pit_active_pcb->terminal_info.fake_page_addr, USER_PAGE);
 	}
 
 	return 1;
