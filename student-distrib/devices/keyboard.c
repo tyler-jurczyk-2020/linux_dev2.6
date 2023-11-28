@@ -424,7 +424,6 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 
 	terminal_t* onscreen_terminal = &(active_terminal_pcb->terminal_info);
 
-	// rtc_running_ternimal = requested_terminal_num;
 	/*
 	step through PCBs to determine if a terminal with the requested # exists
 	*/

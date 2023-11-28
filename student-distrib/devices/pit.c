@@ -12,7 +12,7 @@
 
 void init_pit(){
     enable_irq(IRQ0);
-    timer_set(RUNNING_F_H);
+    timer_set(RUNNING_F_L);
 }
 
 void pit_handler(){
@@ -49,10 +49,10 @@ void pit_handler(){
         update_cursor();
     }
 
-	// rtc_running_ternimal = next_active_pcb->terminal_info.terminal_num;
-
 	send_eoi(0);
 	do_schedule((uint32_t)next_active_pcb->schedule_ebp,(uint32_t)next_active_pcb->schedule_esp);
+
+	rtc_write(0, &(frequency[next_active_pcb->terminal_info.terminal_num]), 4);
 }
 
 void timer_set(int freq){
