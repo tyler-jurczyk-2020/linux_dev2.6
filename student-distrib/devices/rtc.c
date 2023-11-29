@@ -15,12 +15,13 @@ volatile uint8_t rtc_v_enable;
 
 volatile uint32_t v_rate;
 volatile uint32_t base_f;
-volatile uint32_t frequency[3];
 volatile uint32_t count_num[3];
 volatile uint32_t count_down[3];
 
 void rtc_init() {
-	interrupt = 0; //no interrupt occured
+	interrupt[TERMINAL1] = 0; //no interrupt occured
+	interrupt[TERMINAL2] = 0; //no interrupt occured
+	interrupt[TERMINAL3] = 0; //no interrupt occured
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
 	outb(Register_B, PORT_index); //setting index
@@ -96,12 +97,19 @@ int rtc_interrupt_rate(uint32_t frequency_change) {
 	//test_interrupts();
 	
 	if (rtc_v_enable == 1){
-		count_down[0]--;
-		count_down[1]--;
-		count_down[2]--;
-		if (count_down[current_pcb->terminal_info.terminal_num] <= 0){
+		if (count_down[TERMINAL1] > 0){
+			count_down[TERMINAL1]--;
+		}
+		if (count_down[TERMINAL2] > 0){
+			count_down[TERMINAL2]--;
+		}
+		if (count_down[TERMINAL3] > 0){
+			count_down[TERMINAL3]--;
+		}
+		
+		if (count_down[current_pcb->terminal_info.terminal_num] == 0){
 			count_down[current_pcb->terminal_info.terminal_num] = count_num[current_pcb->terminal_info.terminal_num];
-			interrupt = 1; //interrupt occured
+			interrupt[current_pcb->terminal_info.terminal_num] = 1; //interrupt occured
 		}
 	}
 	else{
@@ -110,7 +118,7 @@ int rtc_interrupt_rate(uint32_t frequency_change) {
 		// 	count_down = count_num;
 		// 	interrupt = 1; //interrupt occured
 		// }
-		interrupt = 1; //interrupt occured
+		interrupt[current_pcb->terminal_info.terminal_num] = 1; //interrupt occured
 	}
 	send_eoi(8);
 	sti();
@@ -196,13 +204,14 @@ int rtc_interrupt_rate(uint32_t frequency_change) {
 	// if (nbytes != 4 || buf == NULL) {
 	// 	return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	// }
+	pcb_t *current_pcb = get_pcb();
 
-	interrupt = 0; //no interrupts has occured
-	while (interrupt != 1) {
+	interrupt[current_pcb->terminal_info.terminal_num] = 0; //no interrupts has occured
+	while (interrupt[current_pcb->terminal_info.terminal_num] != 1) {
 		//empty while loop
 		
 	}
-	interrupt = 0; //resetting flag to 0, no interrupt occurs
+	interrupt[current_pcb->terminal_info.terminal_num] = 0; //resetting flag to 0, no interrupt occurs
 	return 0;
 
  }
