@@ -135,7 +135,10 @@ uint32_t halt(uint8_t status){
 	}
 
 	pcb_parent->is_active = 1;
-	switch_terminal(pcb_parent->terminal_info.terminal_num);
+	pcb_parent->terminal_info.is_onscreen = pcb_self->terminal_info.is_onscreen;
+	
+	pcb_self->terminal_info.is_onscreen = 0;
+	//switch_terminal(pcb_parent->terminal_info.terminal_num);
 	//hand back active tag to parent so scheduler can find
 	
 	

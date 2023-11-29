@@ -17,6 +17,7 @@ volatile uint32_t v_rate;
 volatile uint32_t base_f;
 volatile uint32_t count_num[3];
 volatile uint32_t count_down[3];
+volatile uint32_t frequency[3] = {2,2,2};
 
 void rtc_init() {
 	interrupt[TERMINAL1] = 0; //no interrupt occured

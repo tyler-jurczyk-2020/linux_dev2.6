@@ -48,11 +48,11 @@ void pit_handler(){
     if (next_active_pcb->terminal_info.is_onscreen) {
         update_cursor();
     }
-
+	ATTRIB = (uint8_t)color[(uint8_t)next_active_pcb->terminal_info.terminal_num];
 	send_eoi(0);
 	do_schedule((uint32_t)next_active_pcb->schedule_ebp,(uint32_t)next_active_pcb->schedule_esp);
 
-	rtc_write(0, &(frequency[next_active_pcb->terminal_info.terminal_num]), 4);
+	
 }
 
 void timer_set(int freq){

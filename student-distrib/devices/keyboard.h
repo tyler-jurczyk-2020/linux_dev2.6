@@ -50,6 +50,8 @@ typedef struct cursor_pos{
     int screen_y;
 }cursor_pos;
 
+extern uint8_t color[3];
+
 /* This function initialize the keyboard*/
 extern void keyboard_init();
 /*This is the keyboard handler*/

@@ -136,6 +136,7 @@ side effect: print th typed key on screen, maintain buffer and out_buffer
 void handle_keyboard(){
 	//ensure that typing interrupts only add to the ONSCREEN TERMINAL, not the terminal of the currently executing process
 	int curr_terminal = (int)find_onscreen_terminal_num();
+	ATTRIB = (uint8_t)color[(uint8_t)curr_terminal];
 	if(curr_terminal < 0){
 		send_eoi(1);
 		return;

@@ -30,7 +30,7 @@
 // volatile uint8_t rtc_running_ternimal = 0;
 
 volatile int interrupt[3]; //interrupt flag
-volatile uint32_t frequency[3];
+extern volatile uint32_t frequency[3];
 
 // typedef struct rtc_v{
 //     uint32_t rate;
