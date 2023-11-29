@@ -335,7 +335,7 @@ uint32_t close(uint32_t fd){
 uint32_t getargs(uint8_t* buf, uint32_t nbytes){
 	pcb_t *cur_pcb = get_pcb();
 	int8_t* arguments = cur_pcb->args;
-	if(buf == NULL || nbytes < strlen(arguments)+1){
+	if(buf == NULL || strlen((const int8_t *)buf) == 0 || nbytes < strlen(arguments)+1){
 		return -1;
 	}
 	strncpy((char*)buf, (char*)arguments, strlen(arguments));
