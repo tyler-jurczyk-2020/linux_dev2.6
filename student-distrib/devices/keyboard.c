@@ -157,7 +157,7 @@ void handle_keyboard(){
     uint8_t temp;
     uint8_t current_char = 0x00;
     temp = inb(DATA_PORT);
-    if ((temp != old_data || holding_count == 0) && keyboard[curr_terminal].enter_lock == 0){
+    if ((temp != old_data || holding_count == 0) ){
 		
 		if (temp != old_data){				// function key should only be triggered once
 			
@@ -234,13 +234,19 @@ void handle_keyboard(){
 				switch (temp)
 				{
 				case 59:
-					switch_terminal(0);
+					if (switch_terminal(0) < 0){
+						printf("can not open ternimal 1\n");
+					}
 					break;
 				case 60:
-					switch_terminal(1);
+					if (switch_terminal(1) < 0){
+						printf("can not open ternimal 2\n");
+					}
 					break;
 				case 61:
-					switch_terminal(2);
+					if (switch_terminal(2) < 0){
+						printf("can not open ternimal 3\n");
+					}
 					break;
 				default:
 					break;
@@ -261,7 +267,7 @@ void handle_keyboard(){
 			}
         }
 
-        if (current_char != 0x00){
+        if (current_char != 0x00 && keyboard[curr_terminal].enter_lock == 0){
 			if (current_char == ESC){
 				// Do something
 			}
