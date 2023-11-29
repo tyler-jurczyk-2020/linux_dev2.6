@@ -12,6 +12,8 @@
 #define PROGRAM_IDX 32
 #define PROGRAM_ADDR 0x08000000 //128mb
 #define VMEM_ADDR 0x08400000 // 132mb
+#define KERNEL_VMEM 0xB8000
+
 typedef struct {
     union {
         uint32_t entry;
@@ -95,8 +97,14 @@ page_directory_entry_t *get_cr3();
 
 void set_pager_dir_entry(uint32_t page_addr);
 
-void setup_pager_vidmap_entry(uint32_t vmem_addr);
+void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page);
 
 void setup_pager_vidmap_table(uint32_t vmem_addr);
+
+void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen);
+
+void update_kernel_vmem(uint32_t physical, uint32_t virt);
+
+void update_vidmap_vmem(uint32_t physical, uint32_t virt);
 
 #endif

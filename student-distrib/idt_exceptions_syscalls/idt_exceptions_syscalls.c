@@ -6,7 +6,10 @@
 #include "../filesystem/filesystem.h"
 #include "pcb.h"
 #include "../devices/rtc.h"
+#include "../devices/keyboard.h"
+#include "../devices/pit.h"
 
+#define VIDEO       0xB8000
 /*
 Struct to map vector#'s to their english error meaning
 Struct defined in handlers.h
@@ -112,15 +115,34 @@ BELOW ARE SYSTEM CALL FUNCTIONS + FUNCTION HEADERS
  *               Updates paging and the TSS
  */
 uint32_t halt(uint8_t status){
-    // Mark pcb as available
+	cli();
     pcb_t *pcb_self = get_pcb();
-    process_ids[pcb_self->process_id] = 0; 
     // Get parent process
     pcb_t *pcb_parent = get_pcb()->parent;
     if (pcb_parent == NULL) {
+		//re execute
+		process_ids[pcb_self->process_id] = 0; 
         execute((const uint8_t *)"shell"); 
+		return -1;
     }
-    // Update page directory 
+	pcb_self->is_active = 0;
+	//if not from same terminal, should not give back active tag, and should wait until pit moves away
+	if(pcb_parent->terminal_info.terminal_num != pcb_self->terminal_info.terminal_num){
+		switch_terminal(0);
+		process_ids[pcb_self->process_id] = 0;
+		sti();
+		while(1);
+	}
+
+	pcb_parent->is_active = 1;
+	switch_terminal(pcb_parent->terminal_info.terminal_num);
+	//hand back active tag to parent so scheduler can find
+	
+	
+    process_ids[pcb_self->process_id] = 0; 
+	
+	
+	// Update page directory 
     uint8_t avail_process = pcb_parent->process_id;
     set_pager_dir_entry(EIGHT_MB + FOUR_MB*avail_process);
 	flush_tlbs();
@@ -140,7 +162,8 @@ uint32_t halt(uint8_t status){
  *               Sets up the PCB, gets parent's info, sets up TSS, pushes info to stack to iret into user space
  */
 uint32_t execute(const uint8_t* command){
-    // Check executable
+    cli();
+	// Check executable
 	
     uint8_t copy_cmd[strlen((int8_t *)command)+1];
     copy_cmd[strlen((int8_t *)command)] = '\0';
@@ -169,7 +192,31 @@ uint32_t execute(const uint8_t* command){
     // Setup child pcb
     pcb_t *pcb_self = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(avail_process+1))); 
     pcb_t *parent = get_parent_pcb(avail_process);
+	if(parent){
+		//copy terminal info from parent, set parent to not onscreen
+		pcb_self->terminal_info.is_onscreen = parent->terminal_info.is_onscreen;
+		pcb_self->terminal_info.terminal_num = parent->terminal_info.terminal_num;
+		pcb_self->terminal_info.user_page_addr = parent->terminal_info.user_page_addr;
+		pcb_self->terminal_info.fake_page_addr = parent->terminal_info.fake_page_addr;
+		parent->terminal_info.is_onscreen = 0;
+		//only allow one active process per terminal
+		pcb_self->is_active = parent->is_active;
+		parent->is_active = 0;
+	}else{
+		//this is the case of the first terminal
+		init_pit();
+
+		pcb_self->terminal_info.is_onscreen = 1;
+		pcb_self->terminal_info.terminal_num = 0;
+		pcb_self->terminal_info.fake_page_addr = VIDEO + EIGHT_KB/2;
+
+		//set active so scheduler can find it
+		pcb_self->is_active = 1;
+	}
     setup_pcb(pcb_self, avail_process, parent);
+	//TODO make sure this works
+	save_regs((uint32_t)&(pcb_self->schedule_ebp),(uint32_t)&(pcb_self->schedule_esp));
+	
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
     // Setup TSS
     tss.esp0 = EIGHT_MB - (EIGHT_KB*avail_process)-4;
@@ -288,7 +335,7 @@ uint32_t close(uint32_t fd){
 uint32_t getargs(uint8_t* buf, uint32_t nbytes){
 	pcb_t *cur_pcb = get_pcb();
 	int8_t* arguments = cur_pcb->args;
-	if(buf == NULL || nbytes < strlen(arguments)+1){
+	if(buf == NULL || strlen((const int8_t *)buf) == 0 || nbytes < strlen(arguments)+1){
 		return -1;
 	}
 	strncpy((char*)buf, (char*)arguments, strlen(arguments));
@@ -299,7 +346,7 @@ uint32_t vidmap(uint8_t** screen_start){
     if ((int32_t) screen_start < PROGRAM_ADDR || (int32_t) screen_start > PROGRAM_ADDR + FOUR_MB) {
         return -1; 
     }
-    *screen_start = (uint8_t *)VMEM_ADDR;
+    *screen_start = (uint8_t *)VMEM_ADDR;//TODO:(get_pcb()->terminal_info.user_page_addr);
 	return 0;
 }
 uint32_t set_handler(uint32_t signum, void* handler_address){

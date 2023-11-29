@@ -34,12 +34,21 @@
 #define HOLDING_INIT        3
 
 
+
+#define USER_PAGE   0x08400000
+
+
 /* keyboard struct, feel free to add flags/anything else necessary.*/
 typedef struct keyboard_struct  {
     uint8_t buffer[128]; //holds chars that have been typed
 	uint8_t top; //holds index of top element
     uint8_t enter_lock;
 }keyboard_struct;
+
+typedef struct cursor_pos{
+    int screen_x;
+    int screen_y;
+}cursor_pos;
 
 /* This function initialize the keyboard*/
 extern void keyboard_init();
@@ -64,6 +73,10 @@ extern int terminal_close(int32_t fd);
 extern int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes);
 /*puts what is read on to terminal*/
 extern int32_t terminal_write(int32_t fd, const void* buffer, int32_t nbytes);
+//does a lot, see the c file, gist is it switches terminals duh
+int32_t switch_terminal(int8_t requested_terminal_num);
+
+void switch_cursor(uint8_t curr_terminal, uint8_t tar_terminal);
 
 extern int dummy_read();
 
@@ -72,5 +85,10 @@ extern int dummy_open();
 extern int dummy_write();
 
 extern int dummy_close();
+
+extern void save_regs(uint32_t ebp_pcb_addr, uint32_t esp_pcb_addr);
+extern void setup_exec_stack(uint32_t,uint32_t);
+extern uint8_t halt_process(uint32_t,uint32_t);
+extern void flush_tlbs();
 
 #endif

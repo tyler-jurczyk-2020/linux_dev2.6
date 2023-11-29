@@ -5,6 +5,7 @@
 #include "devices/keyboard.h"
 #include "devices/rtc.h"
 #include "filesystem/fs_tests.h"
+#include "devices/pit.h"
 
 #define PASS 1
 #define FAIL 0
@@ -151,7 +152,11 @@ int syscall_jump(){
 }
 /* Checkpoint 4 tests */
 /* Checkpoint 5 tests */
-
+int pit_test(){
+	TEST_HEADER;
+	init_pit();
+	return PASS;
+}
 
 
 /* Test suite entry point */
@@ -185,4 +190,6 @@ void launch_tests(){
     //test_dir_read_single();
     //test_dir_read_multi();
     execute((const uint8_t *)"shell");
+	//pit_test();
+	
     }

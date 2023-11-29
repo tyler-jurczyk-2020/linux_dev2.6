@@ -82,4 +82,8 @@ Certain drivers had the wrong return values for their open/close/read/write, wen
 RTC:
 P: Virtualization issues when handling frequency greater than 512 and less than 1024. Problem do to ~1024Hz being out of sync, not beign able to handle interrupts in one sec.
 S: When freq is 1024, we manually set the rate as to avoid this issue. Now RTC frequency changes appropriately 
+
 CHECKPOINT 5:
+RTC: 
+P: clock become slower when opening and running multiple terminals
+S: split rtc interrupts and corresponding data into 3 copies

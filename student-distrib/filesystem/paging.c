@@ -1,6 +1,13 @@
 #include "../types.h"
 #include "paging.h"
+#include "../lib.h"
 #include "../idt_exceptions_syscalls/idt_exceptions_syscalls.h"
+
+#define VIDEO       0xB8000
+#define NUM_COLS    80
+#define NUM_ROWS    25
+#define LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA 0x3FF000
+
 
 page_directory_entry_t page_dir[TABLE_SZ] __attribute__((aligned(FOUR_KB)));
 
@@ -20,6 +27,18 @@ void setup_pager_table() {
         if (i == PG_TBL_IDX) {
             page_tbl[i].entry =  VIDEO_PAGE_FLAGS;
         } 
+        else if (i == PG_TBL_IDX + 1) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + FOUR_KB; 
+        }
+        else if (i == PG_TBL_IDX + 2) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 2*FOUR_KB;
+        }
+        else if(i == PG_TBL_IDX + 3) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS + 3*FOUR_KB;
+        }
+        else if(i == TABLE_SZ - 1) {
+            page_tbl[i].entry = VIDEO_PAGE_FLAGS;
+        }
         else {
             page_tbl[i].entry = EMPTY_PAGE;
         }
@@ -70,7 +89,7 @@ void set_pager_dir_entry(uint32_t page_addr) {
     entry->base_addr = page_addr >> 22;
 }
 
-void setup_pager_vidmap_entry(uint32_t vmem_addr) {
+void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page) {
     page_table_entry_t* entry = &page_tbl_vmem[(vmem_addr >> 12) & 0x3FF];
     entry->present = 1;
     entry->r_w = 1;
@@ -82,14 +101,14 @@ void setup_pager_vidmap_entry(uint32_t vmem_addr) {
     entry->tbl_attr_idx = 0;
     entry->global = 0;
     entry->avail = 0;
-    entry->base_addr = 0xB8;
+    entry->base_addr = kernel_page >> 12;
 }
 
 void setup_pager_vidmap_table(uint32_t vmem_addr) {
     unsigned int i;
     for(i = 0; i < TABLE_SZ; i++) {
         if (i == ((vmem_addr >> 12) & 0x3FF)) {
-            setup_pager_vidmap_entry(vmem_addr); 
+            setup_pager_vidmap_entry(vmem_addr, KERNEL_VMEM); // Map to real terminal 0
         } 
         else {
             page_tbl_vmem[i].entry = EMPTY_PAGE;
@@ -98,3 +117,39 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
     page_directory_entry_t* cur_page_dir = get_cr3();  
     cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
 }
+
+void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
+    page_table_entry_t* entry = &page_tbl[(virtual >> 12) & 0x3FF];
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 0;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->tbl_attr_idx = 0;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->base_addr = physical >> 12;
+}
+
+void update_vidmap_vmem(uint32_t physical, uint32_t virtual) {
+    page_table_entry_t* entry = &page_tbl_vmem[(virtual >> 12) & 0x3FF];
+    entry->present = 1;
+    entry->r_w = 1;
+    entry->usr_supr = 1;
+    entry->write_thru = 0;
+    entry->disable_cache = 0;
+    entry->accessed = 0;
+    entry->dirty = 0;
+    entry->tbl_attr_idx = 0;
+    entry->global = 0;
+    entry->avail = 0;
+    entry->base_addr = physical >> 12;
+}
+
+void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen) { // Note: These should be both the fake addresses
+    memcpy((void *) on_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
+    memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) off_screen, NUM_ROWS*NUM_COLS*2);
+}
+

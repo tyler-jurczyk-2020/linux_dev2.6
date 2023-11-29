@@ -4,6 +4,75 @@
 
 uint8_t process_ids[MAX_PROCESSES] = {0, 0, 0, 0, 0, 0};
 
+/* int8_t find_terminal_id(requested);
+ * Inputs: requested terminal
+ * Return Value: pcb index of a process in said terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_terminal_pid(uint8_t requested){
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
+		if(process_ids[traverse->process_id] && traverse->is_active && traverse->terminal_info.terminal_num==requested){
+			return i;
+		}
+	}
+	return -1;
+}
+
+/* int8_t find_onscreen_terminal();
+ * Inputs: none
+ * Return Value: terminal number of the onscreen terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_onscreen_terminal_num(){
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
+		if(process_ids[traverse->process_id] && traverse->terminal_info.is_onscreen){
+			return traverse->terminal_info.terminal_num;
+		}
+	}
+	return -1;
+}
+
+pcb_t* find_next_active_pcb(uint32_t current_process){
+	uint8_t i;
+	pcb_t* traverse = (pcb_t*) current_process;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		if((uint32_t)traverse == EIGHT_MB-EIGHT_KB*(MAX_PROCESSES)){
+			traverse = (pcb_t*)(EIGHT_MB);
+		}
+		traverse = (pcb_t *)((uint32_t)traverse - EIGHT_KB);
+		if(process_ids[traverse->process_id] && traverse->is_active == 1){
+			return traverse;
+		}
+	}
+	//should never happen
+	return NULL;
+}
+
+/* int8_t find_onscreen_terminal_id();
+ * Inputs: none
+ * Return Value: pcb index of a process with an active terminal
+ * Function: iterates through pcbs to find a match*/
+int8_t find_onscreen_terminal_pid(){
+	uint8_t i;
+	for(i = 0; i<MAX_PROCESSES; i++){
+		pcb_t* traverse = (pcb_t *)(EIGHT_MB - (EIGHT_KB*(i+1)));
+		if(process_ids[i] && traverse->terminal_info.is_onscreen){
+			return i;
+		}
+	}
+	return -1;
+}
+
+/* uint32_t get_pcb_ptr(pcb_id);
+ * Inputs: id of pcb to get
+ * Return Value: ptr to pcb
+ * Function: uses quick mafs to get the ptr*/
+uint32_t get_pcb_ptr(uint8_t pcb_id){
+	return (uint32_t)(EIGHT_MB - (EIGHT_KB*(pcb_id+1)));
+}
+
 /* int8_t get_process_id();
  * Inputs: none
  * Return Value: -1 if faliure, else the index of next available process id

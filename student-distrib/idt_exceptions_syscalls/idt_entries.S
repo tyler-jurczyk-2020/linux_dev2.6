@@ -75,7 +75,18 @@
 		sti                      ;\
 		iret			
 		
-		
+#define isr_pit(vector)	\
+.globl isr_stub_##vector         ;\
+.align 4						 ;\
+	isr_stub_##vector:           ;\
+		cli                      ;\
+		pushal  				 ;\
+		pushfl					 ;\
+		call pit_handler 	 	 ;\
+		popfl 					 ;\
+		popal					 ;\
+		sti                      ;\
+		iret		
 
 #These below use the macros above to make functions that call their respective handler
 #They are then placed in the stub table below according to their vector# index to be used by handlers.c to populate the idt
@@ -99,8 +110,9 @@ isr_exception(16)
 isr_exception(17)
 isr_exception(18)
 isr_exception(19)
-isr_keyboard(33) #0x21, irq1 on the pic
-isr_rtc(40) #0x28, irq8 on the pic
+isr_keyboard(33) # 0x21, irq1 on the pic
+isr_rtc(40) # 0x28, irq8 on the pic
+isr_pit(32) # 0x20 irq0 on pic
 
 
 
@@ -147,7 +159,7 @@ isr_stub_table:
 	.long 0
 	.long 0
 	.long 0
-	.long 0
+	.long isr_stub_32
 	.long isr_stub_33
 	.long 0
 	.long 0

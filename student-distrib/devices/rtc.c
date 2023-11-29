@@ -1,5 +1,6 @@
 #include "rtc.h"
 #include "../lib.h"
+#include "../idt_exceptions_syscalls/pcb.h"
 
  																	/******* MP3.1 Functions *******/
 /* rtc_init
@@ -14,12 +15,13 @@ volatile uint8_t rtc_v_enable;
 
 volatile uint32_t v_rate;
 volatile uint32_t base_f;
-volatile uint32_t frequency;
-volatile uint32_t count_num;
-volatile uint32_t count_down;
+volatile uint32_t count_num[3];
+volatile uint32_t count_down[3];
 
 void rtc_init() {
-	interrupt = 0; //no interrupt occured
+	interrupt[TERMINAL1] = 0; //no interrupt occured
+	interrupt[TERMINAL2] = 0; //no interrupt occured
+	interrupt[TERMINAL3] = 0; //no interrupt occured
 	outb(Register_B, PORT_index); //disable NMI, and selecting register B
 	char prev = inb(PORT_RW); //reading current value of B
 	outb(Register_B, PORT_index); //setting index
@@ -37,42 +39,42 @@ void rtc_init() {
  * RETURN VALUE: none
  * SIDE EFFECT: Used by rtc_open and rtc_write 
  */
-int rtc_interrupt_rate(uint32_t frequency) {
+int rtc_interrupt_rate(uint32_t frequency_change) {
 	int updated_rate = RTC_HIGHEST_RATE;
 
 	//ERROR CHECKING
-	if (frequency < LOW_FREQ || frequency > HIGH_FREQ) {
+	if (frequency_change < LOW_FREQ || frequency_change > HIGH_FREQ) {
 		return -1;
 	} 
 
 	//Checking if frequency is a power of 2 
-	if ((frequency & (frequency - 1))) {
+	if ((frequency_change & (frequency_change - 1))) {
 		return -1; 
 	}
 	
 	//frequency = 32768 >> (rate-1)
 	//All posible frequency rates
-	if (frequency == HIGH_FREQ) {	
+	if (frequency_change == HIGH_FREQ) {	
 		updated_rate = 6; //0x06
-	} else if (frequency == 512) {	
+	} else if (frequency_change == 512) {	
 		updated_rate = 7; //0x07
-	} else if (frequency == 256) {
+	} else if (frequency_change == 256) {
 		updated_rate = 8; //0x08
-	} else if (frequency == 128) {	
+	} else if (frequency_change == 128) {	
 		updated_rate = 9; //0x09
-	} else if (frequency == 64) {	
+	} else if (frequency_change == 64) {	
 		updated_rate = 10; //0x0A
-	} else if (frequency == 32) {	
+	} else if (frequency_change == 32) {	
 		updated_rate = 11; //0x0B
-	} else if (frequency == 16) {	
+	} else if (frequency_change == 16) {	
 		updated_rate = 12; //0x0C
-	} else if (frequency == 8) {	
+	} else if (frequency_change == 8) {	
 		updated_rate = 13; //0x0D
-	} else if (frequency == 4) {	
+	} else if (frequency_change == 4) {	
 		updated_rate = 14; //0x0E
-	} else if (frequency == LOW_FREQ) {	
+	} else if (frequency_change == LOW_FREQ) {	
 		updated_rate = 15; //0x0F
-	} else if (frequency == 0) {
+	} else if (frequency_change == 0) {
 		updated_rate = 0;
 	}
 
@@ -87,18 +89,27 @@ int rtc_interrupt_rate(uint32_t frequency) {
  * SIDE EFFECT: none
  */
  void rtc_interrupt() {
-
-	cli(); 
 	
+	cli(); 
+	pcb_t *current_pcb = get_pcb();
 	outb(Register_C, PORT_index); //selecting register C
 	inb(PORT_RW); //clearing the contents
 	//test_interrupts();
 	
 	if (rtc_v_enable == 1){
-		count_down--;
-		if (count_down == 0){
-			count_down = count_num;
-			interrupt = 1; //interrupt occured
+		if (count_down[TERMINAL1] > 0){
+			count_down[TERMINAL1]--;
+		}
+		if (count_down[TERMINAL2] > 0){
+			count_down[TERMINAL2]--;
+		}
+		if (count_down[TERMINAL3] > 0){
+			count_down[TERMINAL3]--;
+		}
+		
+		if (count_down[current_pcb->terminal_info.terminal_num] == 0){
+			count_down[current_pcb->terminal_info.terminal_num] = count_num[current_pcb->terminal_info.terminal_num];
+			interrupt[current_pcb->terminal_info.terminal_num] = 1; //interrupt occured
 		}
 	}
 	else{
@@ -107,7 +118,7 @@ int rtc_interrupt_rate(uint32_t frequency) {
 		// 	count_down = count_num;
 		// 	interrupt = 1; //interrupt occured
 		// }
-		interrupt = 1; //interrupt occured
+		interrupt[current_pcb->terminal_info.terminal_num] = 1; //interrupt occured
 	}
 	send_eoi(8);
 	sti();
@@ -135,12 +146,13 @@ int rtc_interrupt_rate(uint32_t frequency) {
 
 	//ERROR CHECKING
 	rtc_init();
+	pcb_t *current_pcb = get_pcb();
 	if (rtc_v_enable == 1){
 		v_rate = RTC_V_RATE;
 		base_f = RTC_V_BASE_F;
-		frequency = 2;				// bu default set to 2
-		count_num = base_f / frequency;
-		count_down = count_num;
+		frequency[current_pcb->terminal_info.terminal_num] = 2;				// bu default set to 2
+		count_num[current_pcb->terminal_info.terminal_num] = base_f / frequency[current_pcb->terminal_info.terminal_num];
+		count_down[current_pcb->terminal_info.terminal_num] = count_num[current_pcb->terminal_info.terminal_num];
 		write_portA((uint8_t)v_rate);
 	}
 	else{
@@ -192,13 +204,14 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	// if (nbytes != 4 || buf == NULL) {
 	// 	return -1; //nbytes should never not be 4 OR buffer shouldn't be NULL
 	// }
+	pcb_t *current_pcb = get_pcb();
 
-	interrupt = 0; //no interrupts has occured
-	while (interrupt != 1) {
+	interrupt[current_pcb->terminal_info.terminal_num] = 0; //no interrupts has occured
+	while (interrupt[current_pcb->terminal_info.terminal_num] != 1) {
 		//empty while loop
 		
 	}
-	interrupt = 0; //resetting flag to 0, no interrupt occurs
+	interrupt[current_pcb->terminal_info.terminal_num] = 0; //resetting flag to 0, no interrupt occurs
 	return 0;
 
  }
@@ -249,6 +262,7 @@ int rtc_interrupt_rate(uint32_t frequency) {
     // for(i=0; i<nbytes; i++){
     //     rate |= (uint32_t)r[i] << 8*i; 
     // }
+	pcb_t *current_pcb = get_pcb();
 
 	uint32_t rate =  *(uint32_t*)buf;
 
@@ -266,9 +280,9 @@ int rtc_interrupt_rate(uint32_t frequency) {
 	if (rtc_v_enable == 1){
 		int flag;
 		cli_and_save(flag);
-		frequency = rate;
-		count_num = base_f / frequency;
-		count_down = count_num;
+		frequency[current_pcb->terminal_info.terminal_num] = rate;
+		count_num[current_pcb->terminal_info.terminal_num] = base_f / frequency[current_pcb->terminal_info.terminal_num];
+		count_down[current_pcb->terminal_info.terminal_num] = count_num[current_pcb->terminal_info.terminal_num];
 		restore_flags(flag);
 		// write_portA((uint8_t)rate);
 	}
