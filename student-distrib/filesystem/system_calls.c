@@ -158,7 +158,7 @@ int32_t check_executable(const uint8_t *command){
         return res; 
     }
     uint32_t magic_numbers;
-    read_data(dentry.inode_num, 0, (uint8_t *)(&magic_numbers), 4); 
+    read_data(dentry.inode_num, 0, (uint8_t *)(&magic_numbers), 4); //read the first four bytes to confirm it's an executable
     if (magic_numbers != MAGIC) {
         return -1;
     }
@@ -171,7 +171,7 @@ int32_t check_executable(const uint8_t *command){
  * Function: Attempts to open the executable by copying it to the correct place in memory */
 
 int32_t open_executable(int32_t inode_num, uint32_t *eip) {
-    int res = read_data(inode_num, 24, (uint8_t *)eip, 4); 
+    int res = read_data(inode_num, 24, (uint8_t *)eip, 4); //bytes 24-27 to get the eip
     if (res < 0) {
         return res;
     }

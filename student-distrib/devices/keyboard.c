@@ -336,7 +336,7 @@ int terminal_open(const uint8_t* filename){
 	disable_cursor();
 	enable_cursor();
 	clear_screen();
-	return 0;
+	return -1;
 }
 /*
 terminal_close
@@ -346,13 +346,13 @@ outputs: none
 side effects: returns success
 */
 int terminal_close(int32_t fd){
-	return 0;
+	return -1;
 }
 /*
 terminal_read
 description: Takes in a buffer to read the keyboard buffer into  (keyboard_buf -> input_buf)
 inputs: file descriptor (ignored), buffer to be written to, number of bytes in buffer
-outputs: number of bytes written
+outputs: number of bytes written 
 side effects: Clears the keyboard buffer, waits for enter until read goes through
 */
 int32_t terminal_read(int32_t fd, void* buffer, int32_t nbytes){
@@ -518,7 +518,7 @@ int32_t switch_terminal(int8_t requested_terminal_num){
 		update_kernel_vmem(pit_active_pcb->terminal_info.fake_page_addr, VIDEO);
         update_vidmap_vmem(pit_active_pcb->terminal_info.fake_page_addr, USER_PAGE);
 	}
-
+	flush_tlbs();
 	return 1;
 }
 

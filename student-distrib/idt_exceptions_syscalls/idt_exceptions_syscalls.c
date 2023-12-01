@@ -217,7 +217,7 @@ uint32_t execute(const uint8_t* command){
 		pcb_self->is_active = 1;
 	}
     setup_pcb(pcb_self, avail_process, parent);
-	//TODO make sure this works
+	
 	save_regs((uint32_t)&(pcb_self->schedule_ebp),(uint32_t)&(pcb_self->schedule_esp));
 	
 	strncpy((char*)pcb_self->args,(char*)parsed_arguments,arg_count);
@@ -349,7 +349,7 @@ uint32_t vidmap(uint8_t** screen_start){
     if ((int32_t) screen_start < PROGRAM_ADDR || (int32_t) screen_start > PROGRAM_ADDR + FOUR_MB) {
         return -1; 
     }
-    *screen_start = (uint8_t *)VMEM_ADDR;//TODO:(get_pcb()->terminal_info.user_page_addr);
+    *screen_start = (uint8_t *)VMEM_ADDR;
 	return 0;
 }
 uint32_t set_handler(uint32_t signum, void* handler_address){

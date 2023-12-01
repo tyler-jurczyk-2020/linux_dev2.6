@@ -270,9 +270,10 @@ int rtc_interrupt_rate(uint32_t frequency_change) {
 	if (rate > HIGH_FREQ){
 		return -1;
 	}
-	else if (rate > RTC_V_BASE_F && rate <= HIGH_FREQ){
-		rtc_v_enable = 0;
-		rate = HIGH_FREQ;
+	else if (rate > RTC_V_BASE_F ){ //&& rate <= HIGH_FREQ
+		//rtc_v_enable = 0;
+		//rate = HIGH_FREQ;
+		return -1;
 	}
 	else{
 		rtc_v_enable = 1;

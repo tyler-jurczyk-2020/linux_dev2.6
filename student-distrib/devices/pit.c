@@ -12,7 +12,7 @@
 
 void init_pit(){
     enable_irq(IRQ0);
-    timer_set(RUNNING_F_L);
+    timer_set(RUNNING_F_H);
 }
 
 void pit_handler(){
