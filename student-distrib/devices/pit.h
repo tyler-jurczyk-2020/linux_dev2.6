@@ -1,3 +1,7 @@
+
+#ifndef PIT_H
+#define PIT_H
+
 #define IRQ0            0x00
 
 #define CH0_DATA_PORT   0x40
@@ -18,3 +22,6 @@ extern void save_regs(uint32_t ebp_pcb_addr, uint32_t esp_pcb_addr);
 extern void do_schedule(uint32_t ebp, uint32_t esp);
 
 void timer_set(int freq);
+
+#endif
+

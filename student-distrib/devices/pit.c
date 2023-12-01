@@ -9,12 +9,17 @@
 #define EIGHT_MB 0x00800000
 #define FOUR_MB 0x00400000
 #define VIDEO       0xB8000
-
+//self explanatory
 void init_pit(){
     enable_irq(IRQ0);
     timer_set(RUNNING_F_H);
 }
-
+/* pit_handler()
+ * INPUTS : none
+ * OUTPUTS: none
+ * Function: finds next active process, switches stacks, and returns control to the next active process.
+ * Side effects: paging is changed for VMEM, b8 page, and user program page (0x8048...) as well as terminal color and cursor
+*/
 void pit_handler(){
     /* get current pcb */
 	pcb_t* curr_pcb = get_pcb();
@@ -54,7 +59,7 @@ void pit_handler(){
 
 	
 }
-
+//self explanatory
 void timer_set(int freq){
     int rate = BASE_F / freq;
     outb(WRITE_CHO, COMMAND_PORT);

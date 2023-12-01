@@ -1,3 +1,7 @@
+
+# inputs: pcb->ebp pcb->esp pointers
+# outputs: none
+# effects: stores the current ebp and esp to the pcb of the process that is losing control
 .globl save_regs
 save_regs:
 	movl %EBP, %EAX
@@ -24,7 +28,9 @@ save_regs:
 	leave
 	ret
 	
-	
+#inputs : ebp and esp of the process that are regaining control
+#outputs: none
+#side effects: returns to pithandler->linkage->iret to user program that is regaining control
 .globl do_schedule
 do_schedule:
 
