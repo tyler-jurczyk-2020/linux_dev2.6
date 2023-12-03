@@ -89,6 +89,12 @@ void set_pager_dir_entry(uint32_t page_addr) {
     entry->base_addr = page_addr >> 22;
 }
 
+/* void setup_pager_vidmap_entry();
+ * Inputs: virtual address, and physical address to map the virtual to
+ * Return Value: none
+ * Function: Sets an entry the in vidmap page table based on the full virtual address
+ * to map to, as well as the kernel page that the userspace page should point to.
+ */
 void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page) {
     page_table_entry_t* entry = &page_tbl_vmem[(vmem_addr >> 12) & 0x3FF];
     entry->present = 1;
@@ -104,6 +110,12 @@ void setup_pager_vidmap_entry(uint32_t vmem_addr, uint32_t kernel_page) {
     entry->base_addr = kernel_page >> 12;
 }
 
+/* void setup_pager_vidmap_table();
+ * Inputs: virtual address of the single userspace page for accessing vmem
+ * Return Value: none
+ * Function: Sets up the entire page table associated with vidmap, where only
+ * one entry from the table is set to point to the appropriate kernel page
+ */
 void setup_pager_vidmap_table(uint32_t vmem_addr) {
     unsigned int i;
     for(i = 0; i < TABLE_SZ; i++) {
@@ -118,6 +130,12 @@ void setup_pager_vidmap_table(uint32_t vmem_addr) {
     cur_page_dir[vmem_addr >> 22].kb.entry = ((uint32_t)page_tbl_vmem | 7);
 }
 
+/* void update_kernel_vmem();
+ * Inputs: virtual address, and physical address that the virtual address points to
+ * Return Value: none
+ * Function: Updates a 4kb video memory entry in the 0-4mb page table to point
+ * to the given physical address
+ */
 void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
     page_table_entry_t* entry = &page_tbl[(virtual >> 12) & 0x3FF];
     entry->present = 1;
@@ -133,6 +151,12 @@ void update_kernel_vmem(uint32_t physical, uint32_t virtual) {
     entry->base_addr = physical >> 12;
 }
 
+/* void update_vidmap_vmem();
+ * Inputs: virtual address, and physical address that the virtual address points to
+ * Return Value: none
+ * Function: Changes the vidmap virtual address to point to the given physical address
+ * so that the kernel and userspace vmems point to the same physical page always
+ */
 void update_vidmap_vmem(uint32_t physical, uint32_t virtual) {
     page_table_entry_t* entry = &page_tbl_vmem[(virtual >> 12) & 0x3FF];
     entry->present = 1;
@@ -148,6 +172,12 @@ void update_vidmap_vmem(uint32_t physical, uint32_t virtual) {
     entry->base_addr = physical >> 12;
 }
 
+/* void switch_kernel_memory();
+ * Inputs: Fake addresses associated with both on_screen terminal and off_screen terminal
+ * Return Value: none
+ * Function: Copies the on_screen to its fake page, and copies the off screen's fake page
+ * to on_screen vmem. Meant to be used during process switch invoked by scheduler
+ */
 void switch_kernel_memory(uint32_t on_screen, uint32_t off_screen) { // Note: These should be both the fake addresses
     memcpy((void *) on_screen, (void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, NUM_ROWS*NUM_COLS*2);
     memcpy((void *) LOCATION_OF_THE_KRABBY_PATTY_SECRET_FORMULA, (void *) off_screen, NUM_ROWS*NUM_COLS*2);

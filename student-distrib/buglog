@@ -87,3 +87,13 @@ CHECKPOINT 5:
 RTC: 
 P: clock become slower when opening and running multiple terminals
 S: split rtc interrupts and corresponding data into 3 copies
+
+Terminal:
+P: Cursor would glitch out and jump to different locations on the screen if multiple processes were running concurrently
+S: The cursor position was being updated everytime that the cursor position changed, however this was incorrect. The behavior was updates so that it would only update the position when drawing the on screen process, and not when drawing to vmem of an off screen process
+
+P: When typing to the keyboard, the text would sometimes write on screen and then not write on screen intermittently.
+S: When the pit would switch to a processes off screen, a keyboard interrupt would just write to the off screen's video memory. To fix this, a keyboard interrupt would switch vmem to drawing on-screen before switching back to the off-screen process before ending the interrupt
+
+P: When spamming switching between terminals when one of the terminals was running ping pong, a little bit of ping pong would "splatter" into the second terminal if timed correctly.
+S: We needed to not only copy the vmem when handing a terminal switch, but we also need to update the page table so the on_screen process was the one writing to the real video memory page.
