@@ -162,6 +162,9 @@ int32_t get_avail_fd() {
  * SideEFFECTS: sets the fd to available
  */
 void make_available_fd(int32_t fd){
+	if(fd < 0 || fd > 7){
+		return;
+	}
 	pcb_t *pcb = get_pcb();
 	pcb->available[fd] = 1;
 }

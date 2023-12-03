@@ -12,7 +12,7 @@
 //self explanatory
 void init_pit(){
     enable_irq(IRQ0);
-    timer_set(RUNNING_F_H);
+    timer_set(RUNNING_F_L);
 }
 /* pit_handler()
  * INPUTS : none
